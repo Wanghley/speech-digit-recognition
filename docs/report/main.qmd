@@ -1,7 +1,7 @@
 ---
 title: |
   <div style="text-align: center; font-size: 1.5em; margin: 0; padding: 0;">
-    Spoken Digit Analysis Using Gaussian Mixture Models
+    Probabilistic Modeling of Spoken Digits: A GMM-Bayesian Framework
   </div>
 author: "Wanghley Soares Martins"
 date: last-modified
@@ -68,7 +68,7 @@ MFCCs are particularly valuable because they:
 - Provide a compact representation of the speech signal
 - Capture important phonetic characteristics
 
-![MFCC Extraction Process](placeholder-for-mfcc-diagram.png)
+<!-- ![MFCC Extraction Process](placeholder-for-mfcc-diagram.png) -->
 
 ## Gaussian Mixture Models
 
