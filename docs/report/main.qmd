@@ -26,6 +26,10 @@ abstract: |
 jupyter: python3
 ---
 
+Available at: [wanghley.com](https://wanghley.com/projects/probabilistic-modeling-of-spoken-digits/)
+
+Codebase: [GitHub](https://github.com/Wanghley/speech-digit-recognition)
+
 # **Project Overview**
 
 | Category | Details |
@@ -579,5 +583,26 @@ The best result achieved was a GMM model with **EM initialization, diagonal cova
 
 - **Model Flexibility**: The flexibility of the GMM model in terms of initialization methods and covariance types allows for customization based on the data characteristics and requirements of the application. This adaptability is a valuable asset in developing robust and accurate models. 
 ---
+
+# Collaborations
+
+Here’s an updated version of your answers incorporating the additional information:
+
+- **Who did you share and debate ideas with while working on this project?**  
+  I worked with multiple people, including peers, mentors, and teaching assistants. Collaborating with Peter Banyas was particularly valuable, as we debated ideas around clustering techniques and their integration with GMMs, which greatly refined my approach.
+
+- **Who did you share code with while working on this project?**  
+  I shared part of my cluster visualization code with Peter Banyas. This exchange allowed us to better understand and debug the issue with clusters not fitting properly within the GMM model.
+
+- **Who did you compare results with while working on this project?**  
+  I compared results with colleagues working on similar speech recognition tasks. This comparison helped validate my system's performance and provided benchmarks for improvement.
+
+- **Who did you help overcome an obstacle while working on this project?**  
+  I assisted peers who faced challenges with feature extraction using MFCCs and shared advice on optimizing hyperparameters in GMMs, which helped them improve their models.
+
+- **Who helped you overcome an obstacle while working on this project?**  
+  Peter Banyas helped me address the issue of clusters not fitting properly in the GMM model by providing valuable insights. Additionally, the TA, Michael Li, guided me on grouping my data more effectively, which significantly improved the accuracy of my model.
+
+
 
 # **References**
