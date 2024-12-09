@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Wanghley Soares Martins">
+<meta name="dcterms.date" content="2024-12-09">
+
+<title>Decoding Speech: A Probabilistic Framework for Spoken Digit Recognition</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="main_files/libs/clipboard/clipboard.min.js"></script>
+<script src="main_files/libs/quarto-html/quarto.js"></script>
+<script src="main_files/libs/quarto-html/popper.min.js"></script>
+<script src="main_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="main_files/libs/quarto-html/anchor.min.js"></script>
+<link href="main_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="main_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="main_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="main_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="main_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<style>html{ scroll-behavior: smooth; }</style>
+<script src="main_files/libs/quarto-diagram/mermaid.min.js"></script>
+<script src="main_files/libs/quarto-diagram/mermaid-init.js"></script>
+<link href="main_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#project-overview" id="toc-project-overview" class="nav-link active" data-scroll-target="#project-overview"><span class="header-section-number">1</span> <strong>Project Overview</strong></a></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction"><span class="header-section-number">2</span> <strong>Introduction</strong></a>
+  <ul>
+  <li><a href="#background" id="toc-background" class="nav-link" data-scroll-target="#background"><span class="header-section-number">2.1</span> <strong>Background</strong></a>
+  <ul>
+  <li><a href="#why-gmms" id="toc-why-gmms" class="nav-link" data-scroll-target="#why-gmms"><span class="header-section-number">2.1.1</span> <strong>Why GMMs?</strong></a>
+  <ul class="collapse">
+  <li><a href="#kmeans-algorithm" id="toc-kmeans-algorithm" class="nav-link" data-scroll-target="#kmeans-algorithm"><span class="header-section-number">2.1.1.1</span> Kmeans Algorithm</a></li>
+  <li><a href="#em-algorithm" id="toc-em-algorithm" class="nav-link" data-scroll-target="#em-algorithm"><span class="header-section-number">2.1.1.2</span> EM Algorithm</a></li>
+  </ul></li>
+  <li><a href="#what-are-mfccs" id="toc-what-are-mfccs" class="nav-link" data-scroll-target="#what-are-mfccs"><span class="header-section-number">2.1.2</span> <strong>What Are MFCCs?</strong></a>
+  <ul class="collapse">
+  <li><a href="#mfcc-extraction-process" id="toc-mfcc-extraction-process" class="nav-link" data-scroll-target="#mfcc-extraction-process"><span class="header-section-number">2.1.2.1</span> <strong>MFCC Extraction Process</strong></a></li>
+  <li><a href="#detailed-breakdown-of-the-mfcc-extraction-steps" id="toc-detailed-breakdown-of-the-mfcc-extraction-steps" class="nav-link" data-scroll-target="#detailed-breakdown-of-the-mfcc-extraction-steps"><span class="header-section-number">2.1.2.2</span> <strong>Detailed Breakdown of the MFCC Extraction Steps</strong></a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#problem-statement" id="toc-problem-statement" class="nav-link" data-scroll-target="#problem-statement"><span class="header-section-number">2.2</span> <strong>Problem Statement</strong></a></li>
+  <li><a href="#dataset" id="toc-dataset" class="nav-link" data-scroll-target="#dataset"><span class="header-section-number">2.3</span> <strong>Dataset</strong></a>
+  <ul>
+  <li><a href="#spoken-arabic-digits-dataset" id="toc-spoken-arabic-digits-dataset" class="nav-link" data-scroll-target="#spoken-arabic-digits-dataset"><span class="header-section-number">2.3.1</span> <strong>Spoken Arabic Digits Dataset</strong></a>
+  <ul class="collapse">
+  <li><a href="#dataset-details" id="toc-dataset-details" class="nav-link" data-scroll-target="#dataset-details"><span class="header-section-number">2.3.1.1</span> <strong>Dataset Details:</strong></a></li>
+  <li><a href="#arabic-digits-pronunciation" id="toc-arabic-digits-pronunciation" class="nav-link" data-scroll-target="#arabic-digits-pronunciation"><span class="header-section-number">2.3.1.2</span> <strong>Arabic Digits Pronunciation</strong></a></li>
+  <li><a href="#training-and-testing-data" id="toc-training-and-testing-data" class="nav-link" data-scroll-target="#training-and-testing-data"><span class="header-section-number">2.3.1.3</span> <strong>Training and Testing Data:</strong></a></li>
+  <li><a href="#data-format-example" id="toc-data-format-example" class="nav-link" data-scroll-target="#data-format-example"><span class="header-section-number">2.3.1.4</span> <strong>Data Format Example:</strong></a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#methodology" id="toc-methodology" class="nav-link" data-scroll-target="#methodology"><span class="header-section-number">3</span> <strong>Methodology</strong></a>
+  <ul>
+  <li><a href="#preprocessing" id="toc-preprocessing" class="nav-link" data-scroll-target="#preprocessing"><span class="header-section-number">3.0.1</span> Preprocessing</a>
+  <ul>
+  <li><a href="#file-loading-and-validation" id="toc-file-loading-and-validation" class="nav-link" data-scroll-target="#file-loading-and-validation"><span class="header-section-number">3.0.1.1</span> File Loading and Validation</a></li>
+  <li><a href="#metadata-initialization" id="toc-metadata-initialization" class="nav-link" data-scroll-target="#metadata-initialization"><span class="header-section-number">3.0.1.2</span> Metadata Initialization</a></li>
+  <li><a href="#line-by-line-processing" id="toc-line-by-line-processing" class="nav-link" data-scroll-target="#line-by-line-processing"><span class="header-section-number">3.0.1.3</span> Line-by-Line Processing</a></li>
+  <li><a href="#organizing-data-into-rows" id="toc-organizing-data-into-rows" class="nav-link" data-scroll-target="#organizing-data-into-rows"><span class="header-section-number">3.0.1.4</span> Organizing Data into Rows</a></li>
+  <li><a href="#converting-to-a-dataframe" id="toc-converting-to-a-dataframe" class="nav-link" data-scroll-target="#converting-to-a-dataframe"><span class="header-section-number">3.0.1.5</span> Converting to a DataFrame</a></li>
+  </ul></li>
+  <li><a href="#probabilistic-modeling" id="toc-probabilistic-modeling" class="nav-link" data-scroll-target="#probabilistic-modeling"><span class="header-section-number">3.0.2</span> Probabilistic Modeling</a>
+  <ul>
+  <li><a href="#exploratory-data-analysis-eda" id="toc-exploratory-data-analysis-eda" class="nav-link" data-scroll-target="#exploratory-data-analysis-eda"><span class="header-section-number">3.0.2.1</span> Exploratory Data Analysis (EDA)</a></li>
+  <li><a href="#gaussian-mixture-models-gmms" id="toc-gaussian-mixture-models-gmms" class="nav-link" data-scroll-target="#gaussian-mixture-models-gmms"><span class="header-section-number">3.0.2.2</span> Gaussian Mixture Models (GMMs)</a>
+  <ul class="collapse">
+  <li><a href="#model-initialization" id="toc-model-initialization" class="nav-link" data-scroll-target="#model-initialization"><span class="header-section-number">3.0.2.2.1</span> Model initialization</a></li>
+  <li><a href="#covariance-type" id="toc-covariance-type" class="nav-link" data-scroll-target="#covariance-type"><span class="header-section-number">3.0.2.2.2</span> Covariance Type</a></li>
+  </ul></li>
+  <li><a href="#maximum-likelihood-estimation" id="toc-maximum-likelihood-estimation" class="nav-link" data-scroll-target="#maximum-likelihood-estimation"><span class="header-section-number">3.0.2.3</span> Maximum Likelihood Estimation</a></li>
+  <li><a href="#segmentation-by-gender-to-improve-the-model" id="toc-segmentation-by-gender-to-improve-the-model" class="nav-link" data-scroll-target="#segmentation-by-gender-to-improve-the-model"><span class="header-section-number">3.0.2.4</span> Segmentation by gender to improve the model</a></li>
+  </ul></li>
+  <li><a href="#classification-and-evaluation" id="toc-classification-and-evaluation" class="nav-link" data-scroll-target="#classification-and-evaluation"><span class="header-section-number">3.0.3</span> Classification and Evaluation</a></li>
+  </ul></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results"><span class="header-section-number">4</span> <strong>Results</strong></a>
+  <ul>
+  <li><a href="#classification-results" id="toc-classification-results" class="nav-link" data-scroll-target="#classification-results"><span class="header-section-number">4.0.1</span> <strong>Classification Results</strong></a>
+  <ul>
+  <li><a href="#kmeans-initialization-results" id="toc-kmeans-initialization-results" class="nav-link" data-scroll-target="#kmeans-initialization-results"><span class="header-section-number">4.0.1.1</span> Kmeans Initialization Results</a></li>
+  <li><a href="#em-initialization-results" id="toc-em-initialization-results" class="nav-link" data-scroll-target="#em-initialization-results"><span class="header-section-number">4.0.1.2</span> EM Initialization Results</a></li>
+  </ul></li>
+  <li><a href="#dataset-gender-segmentation-results" id="toc-dataset-gender-segmentation-results" class="nav-link" data-scroll-target="#dataset-gender-segmentation-results"><span class="header-section-number">4.0.2</span> <strong>Dataset gender segmentation results</strong></a></li>
+  <li><a href="#comparison-between-covariance-types-and-initialization-methods" id="toc-comparison-between-covariance-types-and-initialization-methods" class="nav-link" data-scroll-target="#comparison-between-covariance-types-and-initialization-methods"><span class="header-section-number">4.1</span> <strong>Comparison between Covariance Types and Initialization Methods</strong></a>
+  <ul>
+  <li><a href="#accuracy-vs.-iterations-for-kmeans-initialization" id="toc-accuracy-vs.-iterations-for-kmeans-initialization" class="nav-link" data-scroll-target="#accuracy-vs.-iterations-for-kmeans-initialization"><span class="header-section-number">4.1.1</span> <strong>Accuracy vs.&nbsp;Iterations for KMeans Initialization</strong></a></li>
+  <li><a href="#accuracy-vs.-iterations-for-em-initialization" id="toc-accuracy-vs.-iterations-for-em-initialization" class="nav-link" data-scroll-target="#accuracy-vs.-iterations-for-em-initialization"><span class="header-section-number">4.1.2</span> <strong>Accuracy vs.&nbsp;Iterations for EM Initialization</strong></a></li>
+  </ul></li>
+  <li><a href="#significance" id="toc-significance" class="nav-link" data-scroll-target="#significance"><span class="header-section-number">4.2</span> <strong>Significance</strong></a>
+  <ul>
+  <li><a href="#simplicity-and-interpretability" id="toc-simplicity-and-interpretability" class="nav-link" data-scroll-target="#simplicity-and-interpretability"><span class="header-section-number">4.2.1</span> <strong>Simplicity and Interpretability</strong></a></li>
+  <li><a href="#efficient-use-of-data" id="toc-efficient-use-of-data" class="nav-link" data-scroll-target="#efficient-use-of-data"><span class="header-section-number">4.2.2</span> <strong>Efficient Use of Data</strong></a></li>
+  <li><a href="#lower-computational-cost" id="toc-lower-computational-cost" class="nav-link" data-scroll-target="#lower-computational-cost"><span class="header-section-number">4.2.3</span> <strong>Lower Computational Cost</strong></a></li>
+  <li><a href="#flexibility-in-initialization-and-covariance-types" id="toc-flexibility-in-initialization-and-covariance-types" class="nav-link" data-scroll-target="#flexibility-in-initialization-and-covariance-types"><span class="header-section-number">4.2.4</span> <strong>Flexibility in Initialization and Covariance Types</strong></a></li>
+  <li><a href="#improved-generalization-and-robustness" id="toc-improved-generalization-and-robustness" class="nav-link" data-scroll-target="#improved-generalization-and-robustness"><span class="header-section-number">4.2.5</span> <strong>Improved Generalization and Robustness</strong></a></li>
+  <li><a href="#practical-implications" id="toc-practical-implications" class="nav-link" data-scroll-target="#practical-implications"><span class="header-section-number">4.2.6</span> <strong>Practical Implications</strong></a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">5</span> <strong>Conclusion</strong></a>
+  <ul>
+  <li><a href="#probabilistic-modeling-considerations" id="toc-probabilistic-modeling-considerations" class="nav-link" data-scroll-target="#probabilistic-modeling-considerations"><span class="header-section-number">5.1</span> probabilistic modeling considerations</a></li>
+  <li><a href="#future-work" id="toc-future-work" class="nav-link" data-scroll-target="#future-work"><span class="header-section-number">5.2</span> Future Work</a></li>
+  <li><a href="#lessons-learned" id="toc-lessons-learned" class="nav-link" data-scroll-target="#lessons-learned"><span class="header-section-number">5.3</span> Lessons Learned</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">6</span> <strong>References</strong></a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><p>Decoding Speech: A Probabilistic Framework for Spoken Digit Recognition</p></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Wanghley Soares Martins </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">December 9, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+<div>
+  <div class="abstract">
+    <div class="block-title">Abstract</div>
+    <p>This project presents a probabilistic approach to recognizing spoken digits using Gaussian Mixture Models (GMM) and Mel-Frequency Cepstral Coefficients (MFCCs). By combining the power of statistical modeling with feature extraction techniques inspired by human auditory perception, the system achieves high accuracy in classifying spoken digits.</p>
+    <p>The framework employs MFCCs to extract compact and meaningful features from audio signals and uses GMMs to model the probability distribution of these features. The results demonstrate that this lightweight system is ideal for resource-constrained environments, offering a practical solution for speech recognition tasks.</p>
+  </div>
+</div>
+
+
+</header>
+
+
+<section id="project-overview" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> <strong>Project Overview</strong></h1>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 47%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Category</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Problem</strong></td>
+<td>• Resource-intensive speech recognition systems requiring substantial computational power<br>• Need for efficient spoken digit classification<br>• Complex deep learning models unsuitable for embedded devices<br>• Challenge of maintaining accuracy with simpler models</td>
+</tr>
+<tr class="even">
+<td><strong>Solution</strong></td>
+<td>• Probabilistic framework using Gaussian Mixture Models (GMM)<br>• MFCC feature extraction for audio processing<br>• Dual initialization approaches (KMeans and EM)<br>• Gender-specific model segmentation<br>• Multiple covariance types implementation</td>
+</tr>
+<tr class="odd">
+<td><strong>Technologies</strong></td>
+<td>• <code>sklearn.mixture.GaussianMixture</code>: Core GMM implementation<br>• <code>sklearn.cluster.KMeans</code>: Model initialization<br>• <code>sklearn.preprocessing.StandardScaler</code>: Data normalization<br>• <code>sklearn.pipeline.make_pipeline</code>: Model workflow<br>• <code>sklearn.metrics</code>: Evaluation metrics<br>• <code>numpy</code>: Numerical computations<br>• <code>matplotlib.pyplot</code>, <code>seaborn</code>: Visualization<br>• <code>pandas</code>: Data manipulation<br>• <code>tqdm</code>: Progress tracking<br>• <code>rich.console</code>: Enhanced output<br>• <code>logging</code>: System monitoring</td>
+</tr>
+<tr class="even">
+<td><strong>Results</strong></td>
+<td>• 90.5% accuracy with EM/Diagonal covariance<br>• Higher accuracy for female speakers (93%) vs male (87.6%)<br>• Full covariance type achieved 89.2% with KMeans<br>• Improved performance with gender segmentation<br>• Efficient computational resource usage<br>• Robust performance across different digits</td>
+</tr>
+<tr class="odd">
+<td><strong>Key Learnings</strong></td>
+<td>• Feature engineering crucial for model performance<br>• Model interpretability provides valuable insights<br>• Simple probabilistic models can match complex ones<br>• Data segmentation can enhance accuracy<br>• Initialization method selection impacts performance<br>• Covariance type selection affects model accuracy<br>• Balance between complexity and efficiency vital</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="introduction" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> <strong>Introduction</strong></h1>
+<p>Speech recognition has changed the way we interact with technology. From asking Siri about the weather to commanding Alexa to turn off the lights, it’s everywhere! But what about something simpler—like recognizing spoken digits? Imagine saying “one, two, three” and having a system accurately understand and process those numbers. Sounds simple, right? Not quite.</p>
+<p>This project dives into the fascinating world of <strong>spoken digit recognition</strong>, where we focus on identifying isolated numbers spoken aloud. To tackle this challenge, we use two powerful tools: <strong>Gaussian Mixture Models (GMM)</strong> and <strong>Mel-Frequency Cepstral Coefficients (MFCCs)</strong>. Together, they form a lightweight and efficient framework for extracting meaningful patterns from speech and classifying them accurately.</p>
+<hr>
+<section id="background" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="background"><span class="header-section-number">2.1</span> <strong>Background</strong></h2>
+<p>Speech recognition has come a long way. Back in the day, systems relied on methods like <strong>Hidden Markov Models (HMM)</strong> and <strong>Dynamic Time Warping (DTW)</strong> to process speech <span class="citation" data-cites="6408392"><a href="#ref-6408392" role="doc-biblioref">[1]</a></span>. These methods worked but struggled with variability—accents, noise, or even different speaking speeds could throw them off.</p>
+<p>Then came the era of <strong>Deep Learning</strong>, where models like <strong>Convolutional Neural Networks (CNNs)</strong> and <strong>Recurrent Neural Networks (RNNs)</strong> revolutionized speech recognition. These models could handle complex patterns and adapt to different speakers, making them ideal for large-scale applications.</p>
+<section id="why-gmms" class="level3" data-number="2.1.1">
+<h3 data-number="2.1.1" class="anchored" data-anchor-id="why-gmms"><span class="header-section-number">2.1.1</span> <strong>Why GMMs?</strong></h3>
+<p>Think of GMMs as statistical wizards. They model data as a mix of Gaussian distributions (bell curves!) and are great at capturing patterns in complex datasets. For speech recognition, they’re perfect for handling variability in features like pitch or tone.</p>
+<p>A Gaussian distribution is defined mathematically as: <span class="math display">
+N(x|\mu, \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right)
+</span> <span class="citation" data-cites="8914215"><a href="#ref-8914215" role="doc-biblioref">[2]</a></span></p>
+<p>where <span class="math inline">x</span> is the input, <span class="math inline">\mu</span> is the mean, and <span class="math inline">\sigma^2</span> is the variance.</p>
+<p>A gaussian density N(x|μ,σ2) is also called a component of the mixture model. The mixture model is a weighted sum of these components, where the weights are non-negative and sum to one. <span class="math display">
+f_{\text{GMM}}(x) = \sum_{k=1}^{K} \pi_k N(x|\mu_k, \sigma_k^2)
+</span> <span class="citation" data-cites="8914215"><a href="#ref-8914215" role="doc-biblioref">[2]</a></span></p>
+<p>A GMM is a collection of these Gaussian components, each representing a different class or cluster in the data. By fitting GMMs to speech features, we can model the distribution of spoken digits and classify them accurately.</p>
+<p>A GMM is, therefore, a clustering algorithm that assumes all the data points are generated from a mixture of a finite number of Gaussian distributions with unknown parameters.</p>
+<p>It can be initialized with the K-means algorithm or by using the EM algorithm to estimate the parameters of the Gaussian distribution.</p>
+<section id="kmeans-algorithm" class="level4" data-number="2.1.1.1">
+<h4 data-number="2.1.1.1" class="anchored" data-anchor-id="kmeans-algorithm"><span class="header-section-number">2.1.1.1</span> Kmeans Algorithm</h4>
+<p>The K-means algorithm is a simple iterative method to partition a dataset into K clusters, known as an unsupervised learning algorithm. The steps involved in the K-means algorithm are as follows <span class="citation" data-cites="9072123"><a href="#ref-9072123" role="doc-biblioref">[3]</a></span>:</p>
+<ol type="1">
+<li>Initialize K cluster centroids randomly.</li>
+<li>Assign each data point to the nearest centroid.</li>
+<li>Update the centroids by computing the mean of all data points assigned to each centroid.</li>
+<li>Repeat steps 2 and 3 until convergence.</li>
+<li>The final centroids represent the K clusters.</li>
+<li>The data points are then assigned to the cluster with the nearest centroid.</li>
+</ol>
+<p>A final result of the K-means algorithm can be seen in the following figure:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/papers/yang2ab-2988796-small.gif" class="img-fluid figure-img"></p>
+<figcaption>Figure 1: K-means algorithm for clustering data points into K clusters.<span class="citation" data-cites="9072123"><a href="#ref-9072123" role="doc-biblioref">[3]</a></span></figcaption>
+</figure>
+</div>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Pros</th>
+<th>Cons</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Simple and easy to implement.</td>
+<td>Sensitive to the initial choice of centroids.</td>
+</tr>
+<tr class="even">
+<td>Computationally efficient.</td>
+<td>May converge to a local minimum.</td>
+</tr>
+<tr class="odd">
+<td>Works well with large datasets.</td>
+<td>May not perform well with non-linearly separable data.</td>
+</tr>
+<tr class="even">
+<td>Binary assignment of data points.</td>
+<td>Requires all clusters to have the same variance (spherical clusters).</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="em-algorithm" class="level4" data-number="2.1.1.2">
+<h4 data-number="2.1.1.2" class="anchored" data-anchor-id="em-algorithm"><span class="header-section-number">2.1.1.2</span> EM Algorithm</h4>
+<p>The Expectation-Maximization (EM) algorithm is a general framework for estimating the parameters of statistical models with latent variables. It is an iterative algorithm that alternates between the E-step (Expectation) and the M-step (Maximization) to maximize the likelihood of the observed data. The EM algorithm is particularly useful when dealing with missing or hidden data, as it can estimate the parameters of the model even when some data points are unobserved.</p>
+<p>The EM algorithm is commonly used to fit Gaussian Mixture Models (GMMs) to data, where each component of the mixture represents a Gaussian distribution. The EM algorithm iteratively updates the mean, variance, and weights of the Gaussian components to maximize the likelihood of the observed data.</p>
+<p>The EM algorithm can be summarized as follows:</p>
+<div class="cell" data-layout-align="default">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>graph LR</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    A[Initialize parameters] --&gt; B(E-step)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    B --&gt; C(M-step)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    C --&gt; B</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">graph LR
+    A[Initialize parameters] --&gt; B(E-step)
+    B --&gt; C(M-step)
+    C --&gt; B
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p><em>Figure 2: EM Algorithm Workflow.</em></p>
+<p>The E-step computes the expected value of the latent variables given the current parameters, while the M-step maximizes the likelihood of the observed data by updating the parameters based on the expected values of the latent variables.</p>
+<p>The EM algorithm continues to iterate between the E-step and M-step until convergence, at which point the parameters of the model are estimated.</p>
+<hr>
+</section>
+</section>
+<section id="what-are-mfccs" class="level3" data-number="2.1.2">
+<h3 data-number="2.1.2" class="anchored" data-anchor-id="what-are-mfccs"><span class="header-section-number">2.1.2</span> <strong>What Are MFCCs?</strong></h3>
+<p>Mel-Frequency Cepstral Coefficients (MFCCs) are a cornerstone in speech recognition, often considered the “secret sauce” for transforming raw audio into meaningful features. Inspired by the way humans perceive sound, MFCCs extract key phonetic information from audio signals, enabling efficient classification of spoken digits and other speech features.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/mfccs_speaker_1_utterance_1_digit_0.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 3: Speech Recognition Framework. (Author, 2024)</figcaption>
+</figure>
+</div>
+<p>MFCCs serve as a powerful feature extraction tool in speech recognition. They distill the essential characteristics of an audio signal, simplifying the task of identifying spoken words, such as digits. The extraction of MFCCs is a multi-step process that includes various signal processing techniques designed to highlight the most important auditory features.</p>
+<section id="mfcc-extraction-process" class="level4" data-number="2.1.2.1">
+<h4 data-number="2.1.2.1" class="anchored" data-anchor-id="mfcc-extraction-process"><span class="header-section-number">2.1.2.1</span> <strong>MFCC Extraction Process</strong></h4>
+<p>The process of extracting MFCCs can be broken down into the following key steps:</p>
+<ol type="1">
+<li><strong>Pre-emphasis:</strong> A high-pass filter is applied to boost the higher frequencies in the signal, enhancing important details in speech that might otherwise be lost.</li>
+<li><strong>Framing and Windowing:</strong> The signal is split into small frames, each with a window function applied to minimize edge effects and prevent spectral leakage.</li>
+<li><strong>Fast Fourier Transform (FFT):</strong> Converts the time-domain signal into the frequency domain, allowing us to analyze the signal’s frequency components.</li>
+<li><strong>Mel Filter Bank:</strong> A series of filters is applied to the signal, emphasizing the frequencies most relevant to human hearing.</li>
+<li><strong>Discrete Cosine Transform (DCT):</strong> Reduces the dimensionality of the resulting features, retaining only the most informative coefficients.</li>
+</ol>
+<div class="cell" data-layout-align="default">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>graph LR</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    A[Audio Signal] --&gt; B(Pre-emphasis)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    B --&gt; C(Framing and Windowing)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    C --&gt; D(FFT)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    D --&gt; E(Mel Filter Bank)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    E --&gt; F(DCT)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    F --&gt; G(MFCCs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">graph LR
+    A[Audio Signal] --&gt; B(Pre-emphasis)
+    B --&gt; C(Framing and Windowing)
+    C --&gt; D(FFT)
+    D --&gt; E(Mel Filter Bank)
+    E --&gt; F(DCT)
+    F --&gt; G(MFCCs)
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p><em>Figure 4: MFCC Extraction Process.</em></p>
+<p>This process not only reduces the data’s complexity but also retains the crucial phonetic information needed for accurate recognition.</p>
+</section>
+<section id="detailed-breakdown-of-the-mfcc-extraction-steps" class="level4" data-number="2.1.2.2">
+<h4 data-number="2.1.2.2" class="anchored" data-anchor-id="detailed-breakdown-of-the-mfcc-extraction-steps"><span class="header-section-number">2.1.2.2</span> <strong>Detailed Breakdown of the MFCC Extraction Steps</strong></h4>
+<p>To further illustrate the MFCC extraction, here are visual representations of the key stages:</p>
+<div class="line-block"><img src="assets/papers/1328092-fig-1-source-large.gif" width="45%"> | <img src="assets/papers/1328092-fig-2-source-large.gif" width="45%"> |</div>
+<p><em>Figure 5: MFCC Extraction Process. <span class="citation" data-cites="1328092"><a href="#ref-1328092" role="doc-biblioref">[4]</a></span></em></p>
+<hr>
+</section>
+</section>
+</section>
+<section id="problem-statement" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="problem-statement"><span class="header-section-number">2.2</span> <strong>Problem Statement</strong></h2>
+<p>Speech recognition systems often require substantial computational resources, particularly when using complex models like Convolutional Neural Networks (CNNs). These systems can be unsuitable for embedded or low-power devices, where computational efficiency and simplicity are key. This project challenges the conventional reliance on black-box models by demonstrating that it’s possible to achieve high classification accuracy using more straightforward, interpretable approaches.</p>
+<p>The goal is to show that we can effectively recognize spoken digits without needing deep learning models, by relying on Bayesian probability and classic, efficient models like Gaussian Mixture Models (GMMs). Specifically, this project aims to answer the following questions:</p>
+<ol type="1">
+<li><strong>Can we build a speech recognition system that operates efficiently on resource-constrained devices?</strong><br>
+</li>
+<li><strong>Can we achieve high classification accuracy for spoken digits using Bayesian inference and simple probabilistic models, rather than relying on computationally expensive methods like CNNs?</strong></li>
+</ol>
+<p>By focusing on the strengths of Bayesian probability and traditional techniques, this approach provides an alternative that prioritizes efficiency while maintaining accuracy, making it ideal for practical, low-power applications.</p>
+</section>
+<section id="dataset" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="dataset"><span class="header-section-number">2.3</span> <strong>Dataset</strong></h2>
+<section id="spoken-arabic-digits-dataset" class="level3" data-number="2.3.1">
+<h3 data-number="2.3.1" class="anchored" data-anchor-id="spoken-arabic-digits-dataset"><span class="header-section-number">2.3.1</span> <strong>Spoken Arabic Digits Dataset</strong></h3>
+<p>The <em>Spoken Arabic Digits</em> dataset <span class="citation" data-cites="spoken_arabic_digit_195"><a href="#ref-spoken_arabic_digit_195" role="doc-biblioref">[5]</a></span> serves as the primary resource for this project’s speech recognition tasks. It consists of 8800 time-series samples, each representing Mel-Frequency Cepstral Coefficients (MFCCs) extracted from spoken Arabic digits (0-9). The dataset is compiled from 44 male and 44 female native Arabic speakers, aged 18-40, each speaking the digits 0-9 a total of 10 times. This diversity in speakers and repetitions allows for robust evaluation of recognition models across various conditions.</p>
+<section id="dataset-details" class="level4" data-number="2.3.1.1">
+<h4 data-number="2.3.1.1" class="anchored" data-anchor-id="dataset-details"><span class="header-section-number">2.3.1.1</span> <strong>Dataset Details:</strong></h4>
+<ul>
+<li><strong>Number of Instances:</strong> 8800 time-series samples</li>
+<li><strong>Number of Attributes:</strong> 13 MFCC coefficients per time-series instance</li>
+<li><strong>Source:</strong> Collected by the Laboratory of Automatic and Signals at the University of Badji-Mokhtar, Annaba, Algeria, and preprocessed by Nacereddine Hammami and Mouldi Bedda at Al-Jouf University, Kingdom of Saudi Arabia.</li>
+<li><strong>Data Representation:</strong> Each entry in the dataset represents a single analysis frame, consisting of 13 MFCC coefficients, computed with a sampling rate of 11025 Hz and a Hamming window.</li>
+</ul>
+</section>
+<section id="arabic-digits-pronunciation" class="level4" data-number="2.3.1.2">
+<h4 data-number="2.3.1.2" class="anchored" data-anchor-id="arabic-digits-pronunciation"><span class="header-section-number">2.3.1.2</span> <strong>Arabic Digits Pronunciation</strong></h4>
+<p>The pronunciation of Arabic digits plays a significant role in the development of <strong>Automatic Speech Recognition (ASR)</strong> systems, particularly when classifying spoken digits. Arabic digits, also known as <strong>Hindu-Arabic numerals</strong>, are used globally, but their pronunciation varies depending on the dialect and region. Understanding these variations is essential when building robust models that can accurately recognize spoken digits in Arabic.</p>
+<p>The pronunciation of each digit differs slightly across Arabic-speaking regions, which can influence the feature extraction process and the model’s ability to correctly classify digits. For instance, the digit “3” may be pronounced differently in Levantine Arabic compared to Egyptian Arabic, and these phonetic variations must be accounted for when designing speech recognition models. This is especially true for models like <strong>Gaussian Mixture Models (GMMs)</strong> that rely on the Mel-frequency cepstral coefficients (MFCCs) of spoken audio.</p>
+<p>Key points to consider when working with Arabic digit pronunciation:</p>
+<ol type="1">
+<li><p><strong>Phonetic Variability</strong>: Different regions and dialects produce slightly different sounds for the same digit. For example, “5” in some regions might be pronounced with a stronger aspirated sound, while in others it may be softer.</p></li>
+<li><p><strong>Contextual Changes</strong>: The way digits are pronounced may change when they appear in isolation versus when they are spoken in a sentence or a sequence of digits. This context-dependent variation can impact the consistency of MFCC feature extraction.</p></li>
+<li><p><strong>Speaker Differences</strong>: The speaker’s gender, age, and accent can introduce additional variability in the pronunciation of digits. Gender-specific speech patterns, such as pitch and tone, can affect the extracted features and, therefore, the classification accuracy.</p></li>
+<li><p><strong>Model Training</strong>: To improve accuracy, it’s important to train the model with a diverse set of speakers and dialects. Additionally, augmenting the training data with variations in pronunciation can help the model generalize better across different speakers and accents.</p></li>
+</ol>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 5%">
+<col style="width: 34%">
+<col style="width: 29%">
+<col style="width: 30%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Digit</th>
+<th>Standard Pronunciation (Modern Standard Arabic)</th>
+<th>Example Pronunciation (Egyptian Arabic)</th>
+<th>Example Pronunciation (Levantine Arabic)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>صفر (sifr)</td>
+<td>صفر (sifr)</td>
+<td>صفر (sifr)</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>واحد (wahid)</td>
+<td>واحد (wahid)</td>
+<td>واحد (wahid)</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>اثنان (ithnayn)</td>
+<td>اتنين (itneen)</td>
+<td>اتنين (itneen)</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>ثلاثة (thalatha)</td>
+<td>تلاتة (talaata)</td>
+<td>تلاتة (tlaata)</td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>أربعة (arba’a)</td>
+<td>أربعة (arba’a)</td>
+<td>أربعة (arba’a)</td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>خمسة (khamsa)</td>
+<td>خمسة (khamsa)</td>
+<td>خمسة (khamsa)</td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td>ستة (sitta)</td>
+<td>ستة (setta)</td>
+<td>ستة (setta)</td>
+</tr>
+<tr class="even">
+<td>7</td>
+<td>سبعة (sab’a)</td>
+<td>سبعة (sab’a)</td>
+<td>سبعة (saba)</td>
+</tr>
+<tr class="odd">
+<td>8</td>
+<td>ثمانية (thamaniya)</td>
+<td>تمانية (tamaanya)</td>
+<td>تمانية (tamaanya)</td>
+</tr>
+<tr class="even">
+<td>9</td>
+<td>تسعة (tisa’a)</td>
+<td>تسعة (tesa’a)</td>
+<td>تسعة (tesa’a)</td>
+</tr>
+</tbody>
+</table>
+<p>This table illustrates how pronunciation may vary in different Arabic dialects. Understanding these differences is crucial for training an effective ASR system, as the model must be able to account for these regional and phonetic variations to ensure accurate recognition of spoken digits.</p>
+</section>
+<section id="training-and-testing-data" class="level4" data-number="2.3.1.3">
+<h4 data-number="2.3.1.3" class="anchored" data-anchor-id="training-and-testing-data"><span class="header-section-number">2.3.1.3</span> <strong>Training and Testing Data:</strong></h4>
+<p>The dataset is divided into two subsets: - <strong>Training Set:</strong> Includes 660 blocks per spoken digit (0-9), each block consisting of 4-93 frames. There are 330 blocks for male speakers and 330 for female speakers per digit. Each block represents one utterance of a spoken digit. - <strong>Testing Set:</strong> Includes 220 blocks per spoken digit, with the first 110 blocks representing male speakers and the second 110 blocks representing female speakers. The speakers in the testing set are different from those in the training set.</p>
+<p>This dataset is widely used in speech recognition research and has been employed in various studies focusing on Arabic digit recognition using both classical models (e.g., decision trees) and more advanced models (e.g., neural networks).</p>
+</section>
+<section id="data-format-example" class="level4" data-number="2.3.1.4">
+<h4 data-number="2.3.1.4" class="anchored" data-anchor-id="data-format-example"><span class="header-section-number">2.3.1.4</span> <strong>Data Format Example:</strong></h4>
+<p>Each line in the dataset represents one analysis frame and contains 13 MFCC coefficients. A sample line might look like this:</p>
+<pre><code>-0.14345 0.27675 -0.40932 0.51201 -0.33845 0.21072 -0.16885 0.08767 -0.11234 0.34019 0.48964 -0.05232 0.15498</code></pre>
+<p>The <em>Spoken Arabic Digits</em> dataset provides a solid foundation for developing efficient speech recognition models, and its structure supports both traditional machine learning approaches and more advanced deep learning techniques.</p>
+<hr>
+</section>
+</section>
+</section>
+</section>
+<section id="methodology" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> <strong>Methodology</strong></h1>
+<section id="preprocessing" class="level3" data-number="3.0.1">
+<h3 data-number="3.0.1" class="anchored" data-anchor-id="preprocessing"><span class="header-section-number">3.0.1</span> Preprocessing</h3>
+<p>The dataset <span class="citation" data-cites="spoken_arabic_digit_195"><a href="#ref-spoken_arabic_digit_195" role="doc-biblioref">[5]</a></span> comprises two <code>.txt</code> files, each containing lines that represent individual frames of Mel Frequency Cepstral Coefficients (MFCCs). A set of consecutive frames corresponds to an utterance of a spoken digit, forming a complete audio representation for a single digit.</p>
+<p>To make this raw data suitable for analysis and machine learning tasks, preprocessing is required. This involves extracting the MFCC frames from each line and associating them with metadata, such as digit labels, speaker identifiers, and other contextual information. The goal of this process is to structure the dataset into a format where each frame or sequence of frames is linked to the digit it represents, enabling effective training and evaluation of models designed for speech recognition or classification tasks.</p>
+<div class="cell" data-layout-align="default">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>flowchart TD</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    A[Start: Load File] --&gt; B{File Exists?}</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    B -- Yes --&gt; C[Initialize Metadata Variables]</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    B -- No --&gt; D[Stop: File Not Found]</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    C --&gt; E{Line-by-Line Processing}</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    E -- Blank Line --&gt; F[Update Metadata]</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    E -- Feature Line --&gt; G[Extract and Format Features]</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    F --&gt; H[Add Row with Metadata]</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    G --&gt; H[Add Row with Metadata]</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    H --&gt; E</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    E --&gt;|End of File| I[Convert Rows to DataFrame]</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    I --&gt; J[Output Structured Data]</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    J --&gt; K[Monitor Performance]</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    K --&gt; L[Finish]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart TD
+    A[Start: Load File] --&gt; B{File Exists?}
+    B -- Yes --&gt; C[Initialize Metadata Variables]
+    B -- No --&gt; D[Stop: File Not Found]
+    C --&gt; E{Line-by-Line Processing}
+    E -- Blank Line --&gt; F[Update Metadata]
+    E -- Feature Line --&gt; G[Extract and Format Features]
+    F --&gt; H[Add Row with Metadata]
+    G --&gt; H[Add Row with Metadata]
+    H --&gt; E
+    E --&gt;|End of File| I[Convert Rows to DataFrame]
+    I --&gt; J[Output Structured Data]
+    J --&gt; K[Monitor Performance]
+    K --&gt; L[Finish]
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p><em>Figure 6: Preprocessing Workflow for Spoken Digit Recognition.</em></p>
+<section id="file-loading-and-validation" class="level4" data-number="3.0.1.1">
+<h4 data-number="3.0.1.1" class="anchored" data-anchor-id="file-loading-and-validation"><span class="header-section-number">3.0.1.1</span> File Loading and Validation</h4>
+<p>The file is first opened and validated for existence. If the file is not found, an error is displayed to prevent further processing. A set of column labels is defined, combining metadata fields (e.g., block, utterance, speaker, gender) with feature data.</p>
+</section>
+<section id="metadata-initialization" class="level4" data-number="3.0.1.2">
+<h4 data-number="3.0.1.2" class="anchored" data-anchor-id="metadata-initialization"><span class="header-section-number">3.0.1.2</span> Metadata Initialization</h4>
+<p>Several variables are initialized to track the contextual information: - <code>block</code>: Identifies distinct sections of data. - <code>speaker</code>: Tracks the speaker ID. - <code>gender</code>: Alternates based on speaker transitions. - <code>time_window</code>: Tracks temporal frames within each block.</p>
+<p>These variables are essential for grouping, identifying, and linking raw feature data with experimental context.</p>
+</section>
+<section id="line-by-line-processing" class="level4" data-number="3.0.1.3">
+<h4 data-number="3.0.1.3" class="anchored" data-anchor-id="line-by-line-processing"><span class="header-section-number">3.0.1.3</span> Line-by-Line Processing</h4>
+<ul>
+<li><strong>Blank Lines</strong>: Indicate transitions between data blocks. Metadata variables such as <code>block</code>, <code>speaker</code>, and <code>gender</code> are updated dynamically based on predefined rules.</li>
+<li><strong>Feature Lines</strong>: Contain numerical data such as MFCC coefficients. These lines are formatted into arrays and combined with metadata to form rows of data.</li>
+</ul>
+</section>
+<section id="organizing-data-into-rows" class="level4" data-number="3.0.1.4">
+<h4 data-number="3.0.1.4" class="anchored" data-anchor-id="organizing-data-into-rows"><span class="header-section-number">3.0.1.4</span> Organizing Data into Rows</h4>
+<p>Each processed entry is appended as a row to a list, which accumulates the dataset in a structured format. This ensures consistency and scalability.</p>
+</section>
+<section id="converting-to-a-dataframe" class="level4" data-number="3.0.1.5">
+<h4 data-number="3.0.1.5" class="anchored" data-anchor-id="converting-to-a-dataframe"><span class="header-section-number">3.0.1.5</span> Converting to a DataFrame</h4>
+<p>The accumulated rows are transformed into a tabular format (DataFrame). This format facilitates data analysis, visualization, and preparation for machine learning pipelines. Two final Dataframe formats are created: one for with raw data and other groupping coefficients by digit, utterance, and speaker. While table 1 contains the raw data, table 2 groups the coefficients by digit, utterance, and speaker, making it easier to analyze and model the data and using it for training and testing the GMM model. This can be viewed on the tables below:</p>
+<p><em>Table 1: Raw DataFrame (Sample) (Author, 2024)</em></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 14%">
+<col style="width: 11%">
+<col style="width: 10%">
+<col style="width: 8%">
+<col style="width: 16%">
+<col style="width: 11%">
+<col style="width: 6%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>block</th>
+<th>utterance</th>
+<th>speaker</th>
+<th>gender</th>
+<th>digit</th>
+<th>time_window</th>
+<th>0</th>
+<th>…</th>
+<th>12</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>m</td>
+<td>0</td>
+<td>0</td>
+<td>1.2</td>
+<td>…</td>
+<td>-0.2</td>
+</tr>
+</tbody>
+</table>
+<p><em>Table 2: Grouped DataFrame (Sample) (Author, 2024)</em></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 4%">
+<col style="width: 3%">
+<col style="width: 2%">
+<col style="width: 2%">
+<col style="width: 86%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>utterance</th>
+<th>speaker</th>
+<th>digit</th>
+<th>gender</th>
+<th>coefficients</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>m</td>
+<td><code>[[1.2572, -8.2449, 0.8483, -1.5782, 0.4736, -0.063273, 0.42481, 0.50017, 0.7042, 0.28973, 0.076053, 0.025883, -0.22968], [3.3638, -9.0154, 1.4104, -1.5884, 1.3725, -0.33481, 1.0529, 0.89804, 0.79525, 0.74112, -0.15351, 0.51718, 0.44204]]</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+</section>
+<section id="probabilistic-modeling" class="level3" data-number="3.0.2">
+<h3 data-number="3.0.2" class="anchored" data-anchor-id="probabilistic-modeling"><span class="header-section-number">3.0.2</span> Probabilistic Modeling</h3>
+<section id="exploratory-data-analysis-eda" class="level4" data-number="3.0.2.1">
+<h4 data-number="3.0.2.1" class="anchored" data-anchor-id="exploratory-data-analysis-eda"><span class="header-section-number">3.0.2.1</span> Exploratory Data Analysis (EDA)</h4>
+<p>My first step in this project was to understand the data as well as its characteristics for the each digit. Since, I was not sure about how balanced the data was, I decided to plot the distribution of the number of frames for each digit. The results can be seen in the following figure:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/distribution.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 7: Distribution of the number of frames for each digit (Author, 2024).</figcaption>
+</figure>
+</div>
+<p>The distribution of the number of frames for each digit is relatively balanced, with a slight variation in the number of frames across different digits. This balance is essential for training a robust and generalizable model that can accurately classify spoken digits.</p>
+<p>After understanding the data distribution, I proceeded to visualize the difference between the MFCC coefficients for each digit. This visualization helped me identify that the MFCC coefficients for different digits exhibit distinct patterns, which can be leveraged for classification, as in Figure 8.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/mfccs_speaker_1_utterance_1_each_digit.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 8: Distribution of MFCC coefficients for each digit (Author, 2024).</figcaption>
+</figure>
+</div>
+<p>After understanding how different the MFCC coefficients are for each digit, I decided to evaluate within a same coefficient how the distribution of the coefficients are for each digit. The results can be seen in the following figure:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/MFCC%20distribution.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 9: Distribution of MFCC coefficients for each digit (Author, 2024).</figcaption>
+</figure>
+</div>
+<p>As it can be seen, some coefficients have more variance than others, which can be used to classify the digits. Other coefficients such as 13, on the other hand, have a similar distribution for all digits, which can make it harder to classify the digits.</p>
+</section>
+<section id="gaussian-mixture-models-gmms" class="level4" data-number="3.0.2.2">
+<h4 data-number="3.0.2.2" class="anchored" data-anchor-id="gaussian-mixture-models-gmms"><span class="header-section-number">3.0.2.2</span> Gaussian Mixture Models (GMMs)</h4>
+<p>Gaussian Mixture Models (GMMs) are a powerful tool for modeling complex data distributions. In the context of speech recognition, GMMs can be used to model the probability distribution of Mel-Frequency Cepstral Coefficients (MFCCs) extracted from spoken digits. By fitting GMMs to the MFCC data, we can capture the underlying structure of the features and use this model to classify spoken digits accurately.</p>
+<p>GMMs are being used in this project due to its properties such as: * Flexibility: GMMs can model complex data distributions by combining multiple Gaussian components. * Scalability: GMMs can handle high-dimensional data efficiently. * Interpretability: GMMs provide insights into the underlying structure of the data through the parameters of the Gaussian components.</p>
+<p>Specifically, those MFCC coefficients form a high-dimensional feature space that cannot be processed by simpler algorithms such as K-means. The GMMs are used to model the distribution of these features and classify the spoken digits based on the likelihood of the observed data given the model.</p>
+<p>There are three main phonemes in the spoken digits: the initial sound, the middle sound, and the final sound. The GMMs are used to model the distribution of these phonemes and classify the spoken digits based on the likelihood of the observed data given the model. These clustering can be observed for digit 5 in Figure 10.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/cluster%20analysis%20digit%205.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 10: Cluster assignment differences for different covariance types (Author, 2024).</figcaption>
+</figure>
+</div>
+<section id="model-initialization" class="level5" data-number="3.0.2.2.1">
+<h5 data-number="3.0.2.2.1" class="anchored" data-anchor-id="model-initialization"><span class="header-section-number">3.0.2.2.1</span> Model initialization</h5>
+<p>There are two different ways to initialize the GMMs: using the K-means algorithm or the EM algorithm. The K-means algorithm is a simple and efficient way to initialize the GMMs, while the EM algorithm provides a more sophisticated approach that can handle more complex data distributions. The main difference between the two algorithms is that the K-means algorithm assigns hard cluster assignments to the data points, while the EM algorithm assigns soft cluster assignments based on the probability of each data point belonging to each cluster.</p>
+</section>
+<section id="covariance-type" class="level5" data-number="3.0.2.2.2">
+<h5 data-number="3.0.2.2.2" class="anchored" data-anchor-id="covariance-type"><span class="header-section-number">3.0.2.2.2</span> Covariance Type</h5>
+<p>The covariance type of the GMMs can be set to either ‘full’, ‘tied’, ‘diag’, or ‘spherical’. The choice of covariance type affects the shape of the Gaussian components in the model. The ‘full’ covariance type allows each component to have its own covariance matrix, while the ‘tied’ covariance type forces all components to share the same covariance matrix. The ‘diag’ covariance type assumes that the covariance matrix of each component is diagonal, and the ‘spherical’ covariance type assumes that all components have the same spherical covariance matrix.</p>
+<p>Specifically the selection of covariance type for the GMM model is crucial for capturing the underlying structure of the data. The ‘full’ covariance type allows for more flexibility in modeling complex data distributions, while the ‘tied’, ‘diag’, and ‘spherical’ covariance types make simplifying assumptions about the covariance structure of the data.</p>
+<p>The question on which one to select is based on the data complexity and computational efficient required. While spherical is the simplest and computationally efficient, it may not be able to capture the complexity of the data. On the other hand, the full covariance type is the most complex and computationally expensive, but it can capture the complexity of the data. A detailed view on the cluster assignment differences can be seen in the following Figure 11.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/covariance_types.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 11: Cluster assignment differences for different covariance types <span class="citation" data-cites="BibEntry2020Jul"><a href="#ref-BibEntry2020Jul" role="doc-biblioref">[6]</a></span>.</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="maximum-likelihood-estimation" class="level4" data-number="3.0.2.3">
+<h4 data-number="3.0.2.3" class="anchored" data-anchor-id="maximum-likelihood-estimation"><span class="header-section-number">3.0.2.3</span> Maximum Likelihood Estimation</h4>
+<p>To classify spoken digits, we use a Gaussian Mixture Model (GMM) for each digit (0 through 9). The GMM is a probabilistic model that assumes the data, in this case, the Mel-frequency cepstral coefficients (MFCCs), is generated from a mixture of several Gaussian distributions, each with its own mean and variance.</p>
+<p>For each digit, the GMM learns the distribution of the MFCC coefficients associated with that digit. The model does this by identifying clusters in the feature space (MFCCs) that correspond to different variations of how the digit is spoken. Once the model is trained, the prediction of the spoken digit is based on the log-likelihood of the observed MFCC data, given the parameters of the GMM for each digit. The digit corresponding to the highest log-likelihood <span class="citation" data-cites="BibEntry2024Dec"><a href="#ref-BibEntry2024Dec" role="doc-biblioref">[7]</a></span> is selected as the predicted output.</p>
+<p>For maximum likelihood classification in a Gaussian Mixture Model (GMM), the goal is to find the most likely model parameters that maximize the likelihood of the observed data.</p>
+<p>The <strong>log-likelihood</strong> for a GMM is the sum of the log-likelihoods of the individual Gaussian components. If we have a dataset of <span class="math inline">N</span> observations <span class="math inline">{x_1, x_2, \dots, x_N}</span> and a GMM with <span class="math inline">K</span> components, the <strong>log-likelihood</strong> of the data <span class="math inline">X = \{x_1, x_2, \dots, x_N\}</span> is given by:</p>
+<p><span class="math display">
+\mathcal{L}(\theta) = \sum_{i=1}^{N} \log \left( \sum_{k=1}^{K} \pi_k \mathcal{N}(x_i | \mu_k, \Sigma_k) \right)
+</span> <span class="citation" data-cites="ARI20122804"><a href="#ref-ARI20122804" role="doc-biblioref">[8]</a></span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\mathcal{L}(\theta)</span> is the log-likelihood of the data.</li>
+<li><span class="math inline">\pi_k</span> is the weight (mixture coefficient) of the <span class="math inline">k</span>-th Gaussian component.</li>
+<li><span class="math inline">\mathcal{N}(x_i | \mu_k, \Sigma_k)</span> is the probability density function of the <span class="math inline">k</span>-th Gaussian, evaluated at data point <span class="math inline">x_i</span>, with mean <span class="math inline">\mu_k</span> and covariance <span class="math inline">\Sigma_k</span>.</li>
+<li><span class="math inline">x_i</span> is the <span class="math inline">i</span>-th observation in the dataset.</li>
+</ul>
+<p>The goal is to maximize this log-likelihood to find the best parameters for the GMM.</p>
+<p>This approach allows the model to account for variations in speech, such as different speakers, accents, and pronunciations, while still reliably identifying the correct digit.</p>
+<div class="cell" data-layout-align="default">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>graph LR</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  A[Input: MFCC Coefficients] --&gt; B[Train GMM for Digit 0-9]</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  B --&gt; C[GMM for each Digit 0-9]</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  C --&gt; D0[GMM for Digit 0]</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  C --&gt; D1[GMM for Digit 1]</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  C --&gt; D2[GMM for Digit 2]</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  C --&gt; D3[GMM for Digit 3]</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  C --&gt; D4[GMM for Digit 4]</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  C --&gt; D5[GMM for Digit 5]</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  C --&gt; D6[GMM for Digit 6]</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  C --&gt; D7[GMM for Digit 7]</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  C --&gt; D8[GMM for Digit 8]</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  C --&gt; D9[GMM for Digit 9]</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  D0 --&gt; E0[Log-Likelihood for Digit 0]</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  D1 --&gt; E1[Log-Likelihood for Digit 1]</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  D2 --&gt; E2[Log-Likelihood for Digit 2]</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  D3 --&gt; E3[Log-Likelihood for Digit 3]</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  D4 --&gt; E4[Log-Likelihood for Digit 4]</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  D5 --&gt; E5[Log-Likelihood for Digit 5]</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  D6 --&gt; E6[Log-Likelihood for Digit 6]</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>  D7 --&gt; E7[Log-Likelihood for Digit 7]</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>  D8 --&gt; E8[Log-Likelihood for Digit 8]</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>  D9 --&gt; E9[Log-Likelihood for Digit 9]</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>  E0 --&gt; F[Prediction: Digit with Highest Log-Likelihood]</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>  E1 --&gt; F</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>  E2 --&gt; F</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>  E3 --&gt; F</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>  E4 --&gt; F</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>  E5 --&gt; F</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>  E6 --&gt; F</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>  E7 --&gt; F</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>  E8 --&gt; F</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>  E9 --&gt; F</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">graph LR
+  A[Input: MFCC Coefficients] --&gt; B[Train GMM for Digit 0-9]
+  B --&gt; C[GMM for each Digit 0-9]
+  C --&gt; D0[GMM for Digit 0]
+  C --&gt; D1[GMM for Digit 1]
+  C --&gt; D2[GMM for Digit 2]
+  C --&gt; D3[GMM for Digit 3]
+  C --&gt; D4[GMM for Digit 4]
+  C --&gt; D5[GMM for Digit 5]
+  C --&gt; D6[GMM for Digit 6]
+  C --&gt; D7[GMM for Digit 7]
+  C --&gt; D8[GMM for Digit 8]
+  C --&gt; D9[GMM for Digit 9]
+  
+  D0 --&gt; E0[Log-Likelihood for Digit 0]
+  D1 --&gt; E1[Log-Likelihood for Digit 1]
+  D2 --&gt; E2[Log-Likelihood for Digit 2]
+  D3 --&gt; E3[Log-Likelihood for Digit 3]
+  D4 --&gt; E4[Log-Likelihood for Digit 4]
+  D5 --&gt; E5[Log-Likelihood for Digit 5]
+  D6 --&gt; E6[Log-Likelihood for Digit 6]
+  D7 --&gt; E7[Log-Likelihood for Digit 7]
+  D8 --&gt; E8[Log-Likelihood for Digit 8]
+  D9 --&gt; E9[Log-Likelihood for Digit 9]
+  
+  E0 --&gt; F[Prediction: Digit with Highest Log-Likelihood]
+  E1 --&gt; F
+  E2 --&gt; F
+  E3 --&gt; F
+  E4 --&gt; F
+  E5 --&gt; F
+  E6 --&gt; F
+  E7 --&gt; F
+  E8 --&gt; F
+  E9 --&gt; F
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p><em>Figure 12: GMM Classification Workflow (Author, 2024).</em></p>
+<p>This process is repeated for each digit, resulting in a set of GMMs that can classify spoken digits based on the likelihood of the observed MFCC data. The digit with the highest log-likelihood is selected as the predicted output. For instance, a sample prediction for digit 5 can be seen in the following figure:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/log-likelihood-digit-5.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 13: Sample Prediction for Digit 5 (Author, 2024).</figcaption>
+</figure>
+</div>
+<p>As observed in the figure, the GMM model assigns a log-likelihood score to each digit based on the observed MFCC data. The digit with the highest log-likelihood is selected as the predicted output, in this case, digit 5.</p>
+</section>
+<section id="segmentation-by-gender-to-improve-the-model" class="level4" data-number="3.0.2.4">
+<h4 data-number="3.0.2.4" class="anchored" data-anchor-id="segmentation-by-gender-to-improve-the-model"><span class="header-section-number">3.0.2.4</span> Segmentation by gender to improve the model</h4>
+<p>We can also segment the data by gender to improve the model. By training separate gender and creating a model for each digit per gender (binary, male and female) we can improve the model accuracy. This will provide a more fine grained model that can be used to classify the spoken digits.</p>
+<p>This method is quite efficient and used in many applications, such as telephone banking systems, where the system can ask the user to speak a digit and then classify the digit for automatic customer service <span class="citation" data-cites="6713922"><a href="#ref-6713922" role="doc-biblioref">[9]</a></span>.</p>
+</section>
+</section>
+<section id="classification-and-evaluation" class="level3" data-number="3.0.3">
+<h3 data-number="3.0.3" class="anchored" data-anchor-id="classification-and-evaluation"><span class="header-section-number">3.0.3</span> Classification and Evaluation</h3>
+<p>As exposed in the previous section, the classification of spoken digits is based on the log-likelihood of the observed MFCC data given the parameters of the GMM for each digit. The digit with the highest log-likelihood is selected as the predicted output. To evaluate the performance of the GMM model, we use metrics such as accuracy and computational efficiency.</p>
+<p>The main workflow built for the classification and evaluation of the spoken digits can be seen in the following figure:</p>
+<div class="cell" data-layout-align="default">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>graph TD</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    A[Load Data] --&gt; B[Train GMM with KMeans Initialization]</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    A --&gt; C[Train GMM with EM Initialization]</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    B --&gt; D[Compute Log-Likelihood for GMM KMeans]</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    C --&gt; E[Compute Log-Likelihood for GMM EM]</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    D --&gt; F[Predict Likelihood for Given Point KMeans]</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    E --&gt; F[Predict Likelihood for Given Point EM]</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    F --&gt; G[Evaluation of model]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">graph TD
+    A[Load Data] --&gt; B[Train GMM with KMeans Initialization]
+    A --&gt; C[Train GMM with EM Initialization]
+    B --&gt; D[Compute Log-Likelihood for GMM KMeans]
+    C --&gt; E[Compute Log-Likelihood for GMM EM]
+    D --&gt; F[Predict Likelihood for Given Point KMeans]
+    E --&gt; F[Predict Likelihood for Given Point EM]
+    F --&gt; G[Evaluation of model]
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p><em>Figure 14: Classification and Evaluation Workflow (Author, 2024).</em></p>
+<hr>
+</section>
+</section>
+<section id="results" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> <strong>Results</strong></h1>
+<p>The results of the classification of spoken digits using Gaussian Mixture Models (GMMs) and Mel-Frequency Cepstral Coefficients (MFCCs) are presented below. The classification accuracy and computational efficiency of the model are evaluated to assess its performance in recognizing spoken digits.</p>
+<section id="classification-results" class="level3" data-number="4.0.1">
+<h3 data-number="4.0.1" class="anchored" data-anchor-id="classification-results"><span class="header-section-number">4.0.1</span> <strong>Classification Results</strong></h3>
+<p>Using all the MFCC coefficients, with full covariance type, the classification accuracy for spoken digits using GMMs performs pretty well independently of the initialization method.</p>
+<section id="kmeans-initialization-results" class="level4" data-number="4.0.1.1">
+<h4 data-number="4.0.1.1" class="anchored" data-anchor-id="kmeans-initialization-results"><span class="header-section-number">4.0.1.1</span> Kmeans Initialization Results</h4>
+<p>The classification accuracy for spoken digits using GMMs with KMeans initialization is shown in the following figure 15.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/gmm_kmeans_confusion_matrix.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 15: Classification Accuracy for Spoken Digits using GMMs with KMeans Initialization (Author, 2024).</figcaption>
+</figure>
+</div>
+<p><strong>ACCURACY: 0.864</strong></p>
+<p>The confusion matrix above shows the classification accuracy for each spoken digit using GMMs with KMeans initialization. The model achieved an overall accuracy of 86.4% in classifying spoken digits, with some variations in accuracy across different digits.</p>
+<p>By analyzing the confusion matrix, we can see that the model performs well for most digits, specifically digits 1, 4, 6, and 9, which have high classification accuracy. However, some digits, such as 3 and 7, have lower accuracy, indicating potential areas for improvement in the model.</p>
+</section>
+<section id="em-initialization-results" class="level4" data-number="4.0.1.2">
+<h4 data-number="4.0.1.2" class="anchored" data-anchor-id="em-initialization-results"><span class="header-section-number">4.0.1.2</span> EM Initialization Results</h4>
+<p>The classification accuracy for spoken digits using GMMs with EM initialization is shown in the following figure 16.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/gmm_em_confusion_matrix.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 16: Classification Accuracy for Spoken Digits using GMMs with EM Initialization (Author, 2024).</figcaption>
+</figure>
+</div>
+<p><strong>ACCURACY: 0.90</strong></p>
+<p>The confusion matrix above shows the classification accuracy for each spoken digit using GMMs with EM initialization. The model achieved an overall accuracy of 90% in classifying spoken digits, with improved performance compared to the KMeans initialization method.</p>
+<p>By comparing the results of the two initialization methods, we can see that the EM initialization method outperformed the KMeans initialization method, achieving higher accuracy across all spoken digits. This demonstrates the importance of model initialization in achieving accurate classification results.</p>
+<p>By comparing the pronunciation, digits with very distinct pronunciation such as 0, 1, 4, 6, and 9 have higher accuracy, while digits with similar pronunciation such as 3 and 7 have lower accuracy.</p>
+<p>The proposed system achieved high classification accuracy across all spoken digits while maintaining a lightweight computational footprint.</p>
+</section>
+</section>
+<section id="dataset-gender-segmentation-results" class="level3" data-number="4.0.2">
+<h3 data-number="4.0.2" class="anchored" data-anchor-id="dataset-gender-segmentation-results"><span class="header-section-number">4.0.2</span> <strong>Dataset gender segmentation results</strong></h3>
+<p>Interestingly, the accuracy of the model was slightly improved when the data was segmented, with the model achieving an accuracy of 90.3% when compared without the segmentation to 90%. This shows that the model can be improved by segmenting the data but the results were not significantly higher in this study due to the small dataset available. The comparison of the results can be seen in the following figure 17.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/gmm_em_confusion_female.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 17: Classification Accuracy for Spoken Digits using GMMs with EM Initialization (Author, 2024).</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/gmm_em_confusion_male.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 18: Classification Accuracy for Spoken Digits using GMMs with EM Initialization (Author, 2024).</figcaption>
+</figure>
+</div>
+<p>Interestingly, the model achieved a higher accuracy for female speakers (93%) compared male speakers (87.6%). This difference in accuracy can be attributed to variations in pronunciation, tone, and other speech characteristics between genders.</p>
+</section>
+<section id="comparison-between-covariance-types-and-initialization-methods" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="comparison-between-covariance-types-and-initialization-methods"><span class="header-section-number">4.1</span> <strong>Comparison between Covariance Types and Initialization Methods</strong></h2>
+<p>This experiment was built to compare the performance of different covariance types and initialization methods for the GMM model over some iterations.</p>
+<p>Overall, the full covariance type outperformed while initializing the model with the Kmeans algorithm, achieving accuracy around 89% after 100 iterations. On the other hand, the diag covariance type outperformed while initializing the model with the EM algorithm, achieving <strong>accuracy of 90.5%</strong> after 100 iterations.</p>
+<p><em>Table 3: Comparison of Covariance Types and Initialization Methods for GMMs (Author, 2024).</em></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Covariance Type</th>
+<th>Initialization Method</th>
+<th>Accuracy (%)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Full</td>
+<td>KMeans</td>
+<td>89.2</td>
+</tr>
+<tr class="even">
+<td>Full</td>
+<td>EM</td>
+<td>89.5</td>
+</tr>
+<tr class="odd">
+<td>Tied</td>
+<td>KMeans</td>
+<td>88.3</td>
+</tr>
+<tr class="even">
+<td>Tied</td>
+<td>EM</td>
+<td>88.7</td>
+</tr>
+<tr class="odd">
+<td>Diag</td>
+<td>KMeans</td>
+<td>88.7</td>
+</tr>
+<tr class="even">
+<td><strong>Diag</strong></td>
+<td><strong>EM</strong></td>
+<td><strong>90.5</strong></td>
+</tr>
+<tr class="odd">
+<td>Spherical</td>
+<td>KMeans</td>
+<td>58.6</td>
+</tr>
+<tr class="even">
+<td>Spherical</td>
+<td>EM</td>
+<td>88.2</td>
+</tr>
+</tbody>
+</table>
+<section id="accuracy-vs.-iterations-for-kmeans-initialization" class="level3" data-number="4.1.1">
+<h3 data-number="4.1.1" class="anchored" data-anchor-id="accuracy-vs.-iterations-for-kmeans-initialization"><span class="header-section-number">4.1.1</span> <strong>Accuracy vs.&nbsp;Iterations for KMeans Initialization</strong></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/accuracy_vs_iterations_kmeans.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 19: Comparison of Covariance Types and Initialization Methods for GMMs (Author, 2024).</figcaption>
+</figure>
+</div>
+<p>The results show that the ‘full’ covariance type outperformed the other covariance types, achieving higher accuracy across all initialization methods. The ‘tied’ covariance type also performed well, while the ‘spherical’ covariance type had the lowest accuracy. This experiment demonstrates the importance of selecting the appropriate covariance type for the GMM model to achieve optimal performance.</p>
+</section>
+<section id="accuracy-vs.-iterations-for-em-initialization" class="level3" data-number="4.1.2">
+<h3 data-number="4.1.2" class="anchored" data-anchor-id="accuracy-vs.-iterations-for-em-initialization"><span class="header-section-number">4.1.2</span> <strong>Accuracy vs.&nbsp;Iterations for EM Initialization</strong></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/accuracy_vs_iterations_em.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 20: Comparison of Covariance Types and Initialization Methods for GMMs (Author, 2024).</figcaption>
+</figure>
+</div>
+<p>The results show that the ‘diag’ covariance type outperformed the other covariance types, achieving higher accuracy across all initialization methods. The ‘full’ covariance type also performed well, while the ‘spherical’ covariance type had the lowest accuracy. This experiment demonstrates the importance of selecting the appropriate covariance type for the GMM model to achieve optimal performance.</p>
+<hr>
+</section>
+</section>
+<section id="significance" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="significance"><span class="header-section-number">4.2</span> <strong>Significance</strong></h2>
+<p>The results presented in this study highlight the effectiveness of using <strong>Gaussian Mixture Models (GMMs)</strong> combined with <strong>Mel-Frequency Cepstral Coefficients (MFCCs)</strong> for spoken digit classification. The success of this approach, particularly when compared to more complex models like <strong>Convolutional Neural Networks (CNNs)</strong>, is significant for several reasons:</p>
+<section id="simplicity-and-interpretability" class="level3" data-number="4.2.1">
+<h3 data-number="4.2.1" class="anchored" data-anchor-id="simplicity-and-interpretability"><span class="header-section-number">4.2.1</span> <strong>Simplicity and Interpretability</strong></h3>
+<p>Unlike black-box methods like CNNs, which often require vast amounts of data and computational resources, GMMs provide a <strong>simpler and interpretable model</strong>. The probabilistic nature of GMMs means that they not only classify spoken digits but also provide insight into the underlying distribution of the features (MFCCs). This makes the model not only useful for classification but also for understanding the underlying structure of the speech data. The GMM approach allows for clear interpretation of how well each Gaussian component fits the data.</p>
+</section>
+<section id="efficient-use-of-data" class="level3" data-number="4.2.2">
+<h3 data-number="4.2.2" class="anchored" data-anchor-id="efficient-use-of-data"><span class="header-section-number">4.2.2</span> <strong>Efficient Use of Data</strong></h3>
+<p>The model achieves <strong>high accuracy</strong> (90% with EM initialization) with relatively simple features (MFCCs). Unlike CNNs, which require large datasets and significant computational power, the GMM-based model performs well even with smaller datasets. This is particularly useful in scenarios where data is limited, and computational resources are constrained. The fact that the model achieves solid performance with <strong>just MFCCs</strong> suggests that feature engineering (rather than raw data) can lead to robust classification, providing an efficient solution without the need for more complex models.</p>
+</section>
+<section id="lower-computational-cost" class="level3" data-number="4.2.3">
+<h3 data-number="4.2.3" class="anchored" data-anchor-id="lower-computational-cost"><span class="header-section-number">4.2.3</span> <strong>Lower Computational Cost</strong></h3>
+<p>One of the advantages of the GMM model over deep learning approaches like CNNs is its <strong>computational efficiency</strong>. Training a CNN typically involves large amounts of processing power due to the high number of parameters involved and the need for deep architecture layers. GMMs, on the other hand, are based on a probabilistic framework that requires fewer parameters and has lower computational overhead, making it more suitable for real-time or resource-constrained applications.</p>
+</section>
+<section id="flexibility-in-initialization-and-covariance-types" class="level3" data-number="4.2.4">
+<h3 data-number="4.2.4" class="anchored" data-anchor-id="flexibility-in-initialization-and-covariance-types"><span class="header-section-number">4.2.4</span> <strong>Flexibility in Initialization and Covariance Types</strong></h3>
+<p>The study demonstrates how different <strong>initialization methods (KMeans vs EM)</strong> and <strong>covariance types</strong> impact performance. This flexibility allows for tuning the model to fit different types of data or specific requirements, offering a level of customization that black-box methods like CNNs may not provide without substantial complexity. The results show how choosing the appropriate <strong>covariance type</strong> (e.g., <strong>diag</strong> covariance with EM) can lead to improved classification accuracy, emphasizing the importance of fine-tuning over brute-force model complexity.</p>
+</section>
+<section id="improved-generalization-and-robustness" class="level3" data-number="4.2.5">
+<h3 data-number="4.2.5" class="anchored" data-anchor-id="improved-generalization-and-robustness"><span class="header-section-number">4.2.5</span> <strong>Improved Generalization and Robustness</strong></h3>
+<p>The GMM model achieved high accuracy on both <strong>segmented data</strong> and <strong>non-segmented data</strong>, with a slight improvement when segmented, showcasing its ability to generalize well to various speech conditions. The <strong>gender segmentation results</strong> further highlight that the model can differentiate based on speaker characteristics like gender, which is an important aspect of robustness when dealing with spoken language data.</p>
+</section>
+<section id="practical-implications" class="level3" data-number="4.2.6">
+<h3 data-number="4.2.6" class="anchored" data-anchor-id="practical-implications"><span class="header-section-number">4.2.6</span> <strong>Practical Implications</strong></h3>
+<p>In many practical applications, especially in embedded or resource-constrained systems, the use of GMMs provides a balanced trade-off between performance and computational load. Unlike CNNs, which might require specialized hardware or cloud-based processing for real-time inference, GMMs can be implemented efficiently on devices with limited resources, making them a more accessible option for spoken digit recognition tasks in real-world settings.</p>
+<hr>
+</section>
+</section>
+</section>
+<section id="conclusion" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> <strong>Conclusion</strong></h1>
+<p>By combining MFCC feature extraction with GMM modeling, this project demonstrates that speech recognition doesn’t always require deep learning. This lightweight system paves the way for speech applications on embedded and edge devices.</p>
+<p>The results show that the GMM model, when trained on MFCC features, can achieve high classification accuracy for spoken digits. The model’s performance is comparable to more complex models like CNNs, highlighting the effectiveness of probabilistic modeling in speech recognition tasks.</p>
+<p>The best result achieved was a GMM model with <strong>EM initialization, diagonal covariance, and gender segmentation with an accuracy of 90.5%</strong>, such as in Figure 21. This demonstrates the potential of GMMs for speech recognition tasks, especially when computational efficiency and interpretability are essential.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/gmm_em_confusion_all_gender.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 21: Best Result Achieved for GMM Model (Author, 2024).</figcaption>
+</figure>
+</div>
+<section id="probabilistic-modeling-considerations" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="probabilistic-modeling-considerations"><span class="header-section-number">5.1</span> probabilistic modeling considerations</h2>
+<ul>
+<li><p><strong>Average log-likelihood</strong>: I first tried calculating the product of the likelihoods for each frame in the dataset, but my performance was pretty poor (around 40% accuracy). So I decided to calculate the average log-likelihood for each digit, and that really helped (around 90% accuracy). This is because the average log-likelihood is more robust to variations in the number of frames per digit and provides a more stable measure of the likelihood of the data given the model.</p></li>
+<li><p><strong>Initialization selection</strong>: Depending on the application of speech recognition there was not very much significant difference between the Kmeans and EM initialization methods. However, the EM initialization method performed slightly better in this study. The EM algorithm is more computationally expensive than K-means, but it can handle more complex data distributions and is more robust to outliers. The choice of initialization method should be based on the specific requirements of the application and the characteristics of the data.</p></li>
+<li><p><strong>Covariance type selection</strong>: The choice of covariance type, other than spherical, did not have a significant impact on the performance of the model. The full covariance type performed slightly better than the other covariance types, but the difference was not substantial. The choice of covariance type should be based on the complexity of the data distribution and the computational resources available. The diagonal covariance type is a good compromise between model complexity and computational efficiency, as it assumes that the features are uncorrelated, which is often a reasonable assumption for MFCCs.</p></li>
+</ul>
+</section>
+<section id="future-work" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="future-work"><span class="header-section-number">5.2</span> Future Work</h2>
+<ul>
+<li><strong>Model Optimization</strong>: Further optimization of the GMM model by tuning hyperparameters, such as the number of components and the convergence criteria, could improve classification accuracy.</li>
+<li><strong>Feature Engineering</strong>: Exploring additional features or feature combinations, such as delta and delta-delta coefficients, could enhance the model’s performance. Sppecifically the use of delta and delta-delta coefficients can provide additional information about the rate of change of the MFCCs, which can be useful for capturing temporal dynamics in speech.</li>
+<li><strong>Temporal modeling</strong>: The model currently do not use any temporal information, which can be useful for capturing the dynamics of speech. The use of Hidden Markov Models (HMMs) <span class="citation" data-cites="6031408"><a href="#ref-6031408" role="doc-biblioref">[10]</a></span> could improve the model’s ability to capture temporal dependencies in speech data.</li>
+</ul>
+</section>
+<section id="lessons-learned" class="level2" data-number="5.3">
+<h2 data-number="5.3" class="anchored" data-anchor-id="lessons-learned"><span class="header-section-number">5.3</span> Lessons Learned</h2>
+<ul>
+<li><p><strong>Feature Engineering</strong>: The importance of feature engineering in speech recognition tasks cannot be overstated. The choice of features, such as MFCCs, and how they are extracted and processed can significantly impact the performance of the model.</p></li>
+<li><p><strong>Model Selection</strong>: The choice of model is crucial in speech recognition tasks. While deep learning models like CNNs are popular, simpler models like GMMs can be effective and efficient in certain scenarios.</p></li>
+<li><p><strong>Interpretability</strong>: The interpretability of the model is essential for understanding how it makes predictions. The probabilistic nature of GMMs allows for clear interpretation of the model’s decisions, which can be valuable in real-world applications.</p></li>
+<li><p><strong>Data Segmentation</strong>: Segmenting the data based on distinct characteristics can improve model accuracy but it may lead to bias on the algorithm. It is important to consider the implications of data segmentation on model performance and generalization.</p></li>
+<li><p><strong>Model Evaluation</strong>: The importance of evaluating the model’s performance using appropriate metrics and visualization techniques cannot be understated. Understanding the model’s strengths and weaknesses is crucial for further improvement.</p></li>
+<li><p><strong>Computational Efficiency</strong>: The computational efficiency of the model is a key consideration, especially in resource-constrained environments. The GMM model provides a balance between performance and efficiency, making it suitable for practical applications.</p></li>
+<li><p><strong>Iterative Experimentation</strong>: The iterative process of experimentation, evaluation, and refinement is essential for developing effective machine learning models. By testing different configurations and parameters, we can identify the optimal setup for the task at hand.</p></li>
+<li><p><strong>Model Flexibility</strong>: The flexibility of the GMM model in terms of initialization methods and covariance types allows for customization based on the data characteristics and requirements of the application. This adaptability is a valuable asset in developing robust and accurate models.</p></li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="references" class="level1 unnumbered" data-number="6">
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">6 References</h2><div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
+<div id="ref-6408392" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">N. Hammami, M. Bedda, and N. Farah, <span>“Spoken arabic digits recognition using MFCC based on GMM,”</span> in <em>2012 IEEE conference on sustainable utilization and development in engineering and technology (STUDENT)</em>, 2012, pp. 160–163. doi: <a href="https://doi.org/10.1109/STUDENT.2012.6408392">10.1109/STUDENT.2012.6408392</a>.</div>
+</div>
+<div id="ref-8914215" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">H. Wan, H. Wang, B. Scotney, and J. Liu, <span>“A novel gaussian mixture model for classification,”</span> in <em>2019 IEEE international conference on systems, man and cybernetics (SMC)</em>, 2019, pp. 3298–3303. doi: <a href="https://doi.org/10.1109/SMC.2019.8914215">10.1109/SMC.2019.8914215</a>.</div>
+</div>
+<div id="ref-9072123" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">K. P. Sinaga and M.-S. Yang, <span>“Unsupervised k-means clustering algorithm,”</span> <em>IEEE Access</em>, vol. 8, pp. 80716–80727, 2020, doi: <a href="https://doi.org/10.1109/ACCESS.2020.2988796">10.1109/ACCESS.2020.2988796</a>.</div>
+</div>
+<div id="ref-1328092" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[4] </div><div class="csl-right-inline">A. V. Oppenheim and R. W. Schafer, <span>“From frequency to quefrency: A history of the cepstrum,”</span> <em>IEEE Signal Processing Magazine</em>, vol. 21, no. 5, pp. 95–106, 2004, doi: <a href="https://doi.org/10.1109/MSP.2004.1328092">10.1109/MSP.2004.1328092</a>.</div>
+</div>
+<div id="ref-spoken_arabic_digit_195" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[5] </div><div class="csl-right-inline">M. Bedda and N. Hammami, <span>“<span>Spoken Arabic Digit</span>.”</span> UCI Machine Learning Repository, 2008.</div>
+</div>
+<div id="ref-BibEntry2020Jul" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[6] </div><div class="csl-right-inline"><span>“<span class="nocase">Clustering and Mixture Models <span>—</span> Applied Machine Learning in Python</span>.”</span> Jul. 2020. Available: <a href="https://amueller.github.io/aml/03-unsupervised-learning/02-clustering-mixture-models.html">https://amueller.github.io/aml/03-unsupervised-learning/02-clustering-mixture-models.html</a></div>
+</div>
+<div id="ref-BibEntry2024Dec" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[7] </div><div class="csl-right-inline"><span>“<span>Maximum Likelihood Estimation</span>.”</span> Dec. 2024. Available: <a href="https://www.probabilitycourse.com/chapter8/8_2_3_max_likelihood_estimation.php">https://www.probabilitycourse.com/chapter8/8_2_3_max_likelihood_estimation.php</a></div>
+</div>
+<div id="ref-ARI20122804" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[8] </div><div class="csl-right-inline">Ç. Arı, S. Aksoy, and O. Arıkan, <span>“Maximum likelihood estimation of gaussian mixture models using stochastic search,”</span> <em>Pattern Recognition</em>, vol. 45, no. 7, pp. 2804–2816, 2012, doi: <a href="https://doi.org/10.1016/j.patcog.2011.12.023">https://doi.org/10.1016/j.patcog.2011.12.023</a>.</div>
+</div>
+<div id="ref-6713922" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[9] </div><div class="csl-right-inline">E. Yücesoy and V. V. Nabiyev, <span>“Gender identification of a speaker using MFCC and GMM,”</span> in <em>2013 8th international conference on electrical and electronics engineering (ELECO)</em>, 2013, pp. 626–629. doi: <a href="https://doi.org/10.1109/ELECO.2013.6713922">10.1109/ELECO.2013.6713922</a>.</div>
+</div>
+<div id="ref-6031408" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[10] </div><div class="csl-right-inline">M. Aymen, A. Abdelaziz, S. Halim, and H. Maaref, <span>“Hidden markov models for automatic speech recognition,”</span> in <em>2011 international conference on communications, computing and control applications (CCCA)</em>, 2011, pp. 1–6. doi: <a href="https://doi.org/10.1109/CCCA.2011.6031408">10.1109/CCCA.2011.6031408</a>.</div>
+</div>
+</div></section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+<script src="main_files/libs/quarto-html/zenscroll-min.js"></script>
+</body></html>
