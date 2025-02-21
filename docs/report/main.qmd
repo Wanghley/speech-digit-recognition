@@ -28,6 +28,10 @@ jupyter: python3
 
 Available at: [wanghley.com](https://wanghley.com/projects/probabilistic-modeling-of-spoken-digits/)
 
+**Observations**: For some reason, the pictures and equations are not well formatted on the website which I tried fixing for 5 days without success. The webiste has, tho, the same content as this render (which is the same as the notebook). Therefore, use this pdf as my official submission for the project.
+
+This report was built using Quarto and the entire authenticity and timelining as well as the codebase can be found at the following links:
+
 Codebase: [GitHub](https://github.com/Wanghley/speech-digit-recognition)
 
 # **Project Overview**
@@ -319,6 +323,12 @@ After understanding how different the MFCC coefficients are for each digit, I de
 ![Figure 9: Distribution of MFCC coefficients for each digit (Author, 2024).](assets/MFCC%20distribution.png)
 
 As it can be seen, some coefficients have more variance than others, which can be used to classify the digits. Other coefficients such as 13, on the other hand, have a similar distribution for all digits, which can make it harder to classify the digits.
+
+Also, by applying a dimensional reduction algorithm, UMAP [@DBLP:journals/corr/abs-2108-05525], I was able to visualize the distribution of the MFCC coefficients for each digit. The results can be seen in the following figure:
+
+![Figure 10: UMAP visualization of MFCC coefficients for each digit (Author, 2024).](assets/umap_mfccs_grid_colored.png)
+
+Clearly from the figure, the MFCC coefficients for each digit exhibit distinct patterns that can be used to classify the spoken digits accurately. This visualization provides insights into the underlying structure of the data and highlights the potential of using GMMs to model the distribution of the MFCC coefficients for each digit.
 
 #### Gaussian Mixture Models (GMMs)
 

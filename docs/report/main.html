@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Wanghley Soares Martins">
-<meta name="dcterms.date" content="2024-12-09">
+<meta name="dcterms.date" content="2025-02-20">
 
 <title>Decoding Speech: A Probabilistic Framework for Spoken Digit Recognition</title>
 <style>
@@ -228,7 +228,8 @@ window.Quarto = {
   <li><a href="#future-work" id="toc-future-work" class="nav-link" data-scroll-target="#future-work"><span class="header-section-number">5.2</span> Future Work</a></li>
   <li><a href="#lessons-learned" id="toc-lessons-learned" class="nav-link" data-scroll-target="#lessons-learned"><span class="header-section-number">5.3</span> Lessons Learned</a></li>
   </ul></li>
-  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">6</span> <strong>References</strong></a></li>
+  <li><a href="#collaborations" id="toc-collaborations" class="nav-link" data-scroll-target="#collaborations"><span class="header-section-number">6</span> Collaborations</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">7</span> <strong>References</strong></a></li>
   </ul>
 </nav>
 </div>
@@ -253,7 +254,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">December 9, 2024</p>
+      <p class="date">February 20, 2025</p>
     </div>
   </div>
   
@@ -272,6 +273,10 @@ window.Quarto = {
 </header>
 
 
+<p>Available at: <a href="https://wanghley.com/projects/probabilistic-modeling-of-spoken-digits/">wanghley.com</a></p>
+<p><strong>Observations</strong>: For some reason, the pictures and equations are not well formatted on the website which I tried fixing for 5 days without success. The webiste has, tho, the same content as this render (which is the same as the notebook). Therefore, use this pdf as my official submission for the project.</p>
+<p>This report was built using Quarto and the entire authenticity and timelining as well as the codebase can be found at the following links:</p>
+<p>Codebase: <a href="https://github.com/Wanghley/speech-digit-recognition">GitHub</a></p>
 <section id="project-overview" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> <strong>Project Overview</strong></h1>
 <table class="caption-top table">
@@ -774,6 +779,14 @@ f_{\text{GMM}}(x) = \sum_{k=1}^{K} \pi_k N(x|\mu_k, \sigma_k^2)
 </figure>
 </div>
 <p>As it can be seen, some coefficients have more variance than others, which can be used to classify the digits. Other coefficients such as 13, on the other hand, have a similar distribution for all digits, which can make it harder to classify the digits.</p>
+<p>Also, by applying a dimensional reduction algorithm, UMAP <span class="citation" data-cites="DBLP:journals/corr/abs-2108-05525"><a href="#ref-DBLP:journals/corr/abs-2108-05525" role="doc-biblioref">[6]</a></span>, I was able to visualize the distribution of the MFCC coefficients for each digit. The results can be seen in the following figure:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/umap_mfccs_grid_colored.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 10: UMAP visualization of MFCC coefficients for each digit (Author, 2024).</figcaption>
+</figure>
+</div>
+<p>Clearly from the figure, the MFCC coefficients for each digit exhibit distinct patterns that can be used to classify the spoken digits accurately. This visualization provides insights into the underlying structure of the data and highlights the potential of using GMMs to model the distribution of the MFCC coefficients for each digit.</p>
 </section>
 <section id="gaussian-mixture-models-gmms" class="level4" data-number="3.0.2.2">
 <h4 data-number="3.0.2.2" class="anchored" data-anchor-id="gaussian-mixture-models-gmms"><span class="header-section-number">3.0.2.2</span> Gaussian Mixture Models (GMMs)</h4>
@@ -799,7 +812,7 @@ f_{\text{GMM}}(x) = \sum_{k=1}^{K} \pi_k N(x|\mu_k, \sigma_k^2)
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="assets/covariance_types.png" class="img-fluid figure-img"></p>
-<figcaption>Figure 11: Cluster assignment differences for different covariance types <span class="citation" data-cites="BibEntry2020Jul"><a href="#ref-BibEntry2020Jul" role="doc-biblioref">[6]</a></span>.</figcaption>
+<figcaption>Figure 11: Cluster assignment differences for different covariance types <span class="citation" data-cites="BibEntry2020Jul"><a href="#ref-BibEntry2020Jul" role="doc-biblioref">[7]</a></span>.</figcaption>
 </figure>
 </div>
 </section>
@@ -807,12 +820,12 @@ f_{\text{GMM}}(x) = \sum_{k=1}^{K} \pi_k N(x|\mu_k, \sigma_k^2)
 <section id="maximum-likelihood-estimation" class="level4" data-number="3.0.2.3">
 <h4 data-number="3.0.2.3" class="anchored" data-anchor-id="maximum-likelihood-estimation"><span class="header-section-number">3.0.2.3</span> Maximum Likelihood Estimation</h4>
 <p>To classify spoken digits, we use a Gaussian Mixture Model (GMM) for each digit (0 through 9). The GMM is a probabilistic model that assumes the data, in this case, the Mel-frequency cepstral coefficients (MFCCs), is generated from a mixture of several Gaussian distributions, each with its own mean and variance.</p>
-<p>For each digit, the GMM learns the distribution of the MFCC coefficients associated with that digit. The model does this by identifying clusters in the feature space (MFCCs) that correspond to different variations of how the digit is spoken. Once the model is trained, the prediction of the spoken digit is based on the log-likelihood of the observed MFCC data, given the parameters of the GMM for each digit. The digit corresponding to the highest log-likelihood <span class="citation" data-cites="BibEntry2024Dec"><a href="#ref-BibEntry2024Dec" role="doc-biblioref">[7]</a></span> is selected as the predicted output.</p>
+<p>For each digit, the GMM learns the distribution of the MFCC coefficients associated with that digit. The model does this by identifying clusters in the feature space (MFCCs) that correspond to different variations of how the digit is spoken. Once the model is trained, the prediction of the spoken digit is based on the log-likelihood of the observed MFCC data, given the parameters of the GMM for each digit. The digit corresponding to the highest log-likelihood <span class="citation" data-cites="BibEntry2024Dec"><a href="#ref-BibEntry2024Dec" role="doc-biblioref">[8]</a></span> is selected as the predicted output.</p>
 <p>For maximum likelihood classification in a Gaussian Mixture Model (GMM), the goal is to find the most likely model parameters that maximize the likelihood of the observed data.</p>
 <p>The <strong>log-likelihood</strong> for a GMM is the sum of the log-likelihoods of the individual Gaussian components. If we have a dataset of <span class="math inline">N</span> observations <span class="math inline">{x_1, x_2, \dots, x_N}</span> and a GMM with <span class="math inline">K</span> components, the <strong>log-likelihood</strong> of the data <span class="math inline">X = \{x_1, x_2, \dots, x_N\}</span> is given by:</p>
 <p><span class="math display">
 \mathcal{L}(\theta) = \sum_{i=1}^{N} \log \left( \sum_{k=1}^{K} \pi_k \mathcal{N}(x_i | \mu_k, \Sigma_k) \right)
-</span> <span class="citation" data-cites="ARI20122804"><a href="#ref-ARI20122804" role="doc-biblioref">[8]</a></span></p>
+</span> <span class="citation" data-cites="ARI20122804"><a href="#ref-ARI20122804" role="doc-biblioref">[9]</a></span></p>
 <p>Where:</p>
 <ul>
 <li><span class="math inline">\mathcal{L}(\theta)</span> is the log-likelihood of the data.</li>
@@ -919,7 +932,7 @@ f_{\text{GMM}}(x) = \sum_{k=1}^{K} \pi_k N(x|\mu_k, \sigma_k^2)
 <section id="segmentation-by-gender-to-improve-the-model" class="level4" data-number="3.0.2.4">
 <h4 data-number="3.0.2.4" class="anchored" data-anchor-id="segmentation-by-gender-to-improve-the-model"><span class="header-section-number">3.0.2.4</span> Segmentation by gender to improve the model</h4>
 <p>We can also segment the data by gender to improve the model. By training separate gender and creating a model for each digit per gender (binary, male and female) we can improve the model accuracy. This will provide a more fine grained model that can be used to classify the spoken digits.</p>
-<p>This method is quite efficient and used in many applications, such as telephone banking systems, where the system can ask the user to speak a digit and then classify the digit for automatic customer service <span class="citation" data-cites="6713922"><a href="#ref-6713922" role="doc-biblioref">[9]</a></span>.</p>
+<p>This method is quite efficient and used in many applications, such as telephone banking systems, where the system can ask the user to speak a digit and then classify the digit for automatic customer service <span class="citation" data-cites="6713922"><a href="#ref-6713922" role="doc-biblioref">[10]</a></span>.</p>
 </section>
 </section>
 <section id="classification-and-evaluation" class="level3" data-number="3.0.3">
@@ -1144,7 +1157,7 @@ f_{\text{GMM}}(x) = \sum_{k=1}^{K} \pi_k N(x|\mu_k, \sigma_k^2)
 <ul>
 <li><strong>Model Optimization</strong>: Further optimization of the GMM model by tuning hyperparameters, such as the number of components and the convergence criteria, could improve classification accuracy.</li>
 <li><strong>Feature Engineering</strong>: Exploring additional features or feature combinations, such as delta and delta-delta coefficients, could enhance the model’s performance. Sppecifically the use of delta and delta-delta coefficients can provide additional information about the rate of change of the MFCCs, which can be useful for capturing temporal dynamics in speech.</li>
-<li><strong>Temporal modeling</strong>: The model currently do not use any temporal information, which can be useful for capturing the dynamics of speech. The use of Hidden Markov Models (HMMs) <span class="citation" data-cites="6031408"><a href="#ref-6031408" role="doc-biblioref">[10]</a></span> could improve the model’s ability to capture temporal dependencies in speech data.</li>
+<li><strong>Temporal modeling</strong>: The model currently do not use any temporal information, which can be useful for capturing the dynamics of speech. The use of Hidden Markov Models (HMMs) <span class="citation" data-cites="6031408"><a href="#ref-6031408" role="doc-biblioref">[11]</a></span> could improve the model’s ability to capture temporal dependencies in speech data.</li>
 </ul>
 </section>
 <section id="lessons-learned" class="level2" data-number="5.3">
@@ -1162,12 +1175,28 @@ f_{\text{GMM}}(x) = \sum_{k=1}^{K} \pi_k N(x|\mu_k, \sigma_k^2)
 <hr>
 </section>
 </section>
-<section id="references" class="level1 unnumbered" data-number="6">
+<section id="collaborations" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Collaborations</h1>
+<p>Here’s an updated version of your answers incorporating the additional information:</p>
+<ul>
+<li><p><strong>Who did you share and debate ideas with while working on this project?</strong><br>
+I worked with multiple people, including peers, mentors, and teaching assistants. Collaborating with Peter Banyas was particularly valuable, as we debated ideas around clustering techniques and their integration with GMMs, which greatly refined my approach.</p></li>
+<li><p><strong>Who did you share code with while working on this project?</strong><br>
+I shared part of my cluster visualization code with Peter Banyas. This exchange allowed us to better understand and debug the issue with clusters not fitting properly within the GMM model.</p></li>
+<li><p><strong>Who did you compare results with while working on this project?</strong><br>
+I compared results with colleagues working on similar speech recognition tasks. This comparison helped validate my system’s performance and provided benchmarks for improvement.</p></li>
+<li><p><strong>Who did you help overcome an obstacle while working on this project?</strong><br>
+I assisted peers who faced challenges with feature extraction using MFCCs and shared advice on optimizing hyperparameters in GMMs, which helped them improve their models.</p></li>
+<li><p><strong>Who helped you overcome an obstacle while working on this project?</strong><br>
+Peter Banyas helped me address the issue of clusters not fitting properly in the GMM model by providing valuable insights. Additionally, the TA, Michael Li, guided me on grouping my data more effectively, which significantly improved the accuracy of my model.</p></li>
+</ul>
+</section>
+<section id="references" class="level1 unnumbered" data-number="7">
 
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">6 References</h2><div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">7 References</h2><div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
 <div id="ref-6408392" class="csl-entry" role="listitem">
 <div class="csl-left-margin">[1] </div><div class="csl-right-inline">N. Hammami, M. Bedda, and N. Farah, <span>“Spoken arabic digits recognition using MFCC based on GMM,”</span> in <em>2012 IEEE conference on sustainable utilization and development in engineering and technology (STUDENT)</em>, 2012, pp. 160–163. doi: <a href="https://doi.org/10.1109/STUDENT.2012.6408392">10.1109/STUDENT.2012.6408392</a>.</div>
 </div>
@@ -1183,20 +1212,23 @@ f_{\text{GMM}}(x) = \sum_{k=1}^{K} \pi_k N(x|\mu_k, \sigma_k^2)
 <div id="ref-spoken_arabic_digit_195" class="csl-entry" role="listitem">
 <div class="csl-left-margin">[5] </div><div class="csl-right-inline">M. Bedda and N. Hammami, <span>“<span>Spoken Arabic Digit</span>.”</span> UCI Machine Learning Repository, 2008.</div>
 </div>
+<div id="ref-DBLP:journals/corr/abs-2108-05525" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[6] </div><div class="csl-right-inline">A. Dalmia and S. Sia, <span>“Clustering with <span>UMAP:</span> Why and how connectivity matters,”</span> <em>CoRR</em>, vol. abs/2108.05525, 2021, Available: <a href="https://arxiv.org/abs/2108.05525">https://arxiv.org/abs/2108.05525</a></div>
+</div>
 <div id="ref-BibEntry2020Jul" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[6] </div><div class="csl-right-inline"><span>“<span class="nocase">Clustering and Mixture Models <span>—</span> Applied Machine Learning in Python</span>.”</span> Jul. 2020. Available: <a href="https://amueller.github.io/aml/03-unsupervised-learning/02-clustering-mixture-models.html">https://amueller.github.io/aml/03-unsupervised-learning/02-clustering-mixture-models.html</a></div>
+<div class="csl-left-margin">[7] </div><div class="csl-right-inline"><span>“<span class="nocase">Clustering and Mixture Models <span>—</span> Applied Machine Learning in Python</span>.”</span> Jul. 2020. Available: <a href="https://amueller.github.io/aml/03-unsupervised-learning/02-clustering-mixture-models.html">https://amueller.github.io/aml/03-unsupervised-learning/02-clustering-mixture-models.html</a></div>
 </div>
 <div id="ref-BibEntry2024Dec" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[7] </div><div class="csl-right-inline"><span>“<span>Maximum Likelihood Estimation</span>.”</span> Dec. 2024. Available: <a href="https://www.probabilitycourse.com/chapter8/8_2_3_max_likelihood_estimation.php">https://www.probabilitycourse.com/chapter8/8_2_3_max_likelihood_estimation.php</a></div>
+<div class="csl-left-margin">[8] </div><div class="csl-right-inline"><span>“<span>Maximum Likelihood Estimation</span>.”</span> Dec. 2024. Available: <a href="https://www.probabilitycourse.com/chapter8/8_2_3_max_likelihood_estimation.php">https://www.probabilitycourse.com/chapter8/8_2_3_max_likelihood_estimation.php</a></div>
 </div>
 <div id="ref-ARI20122804" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[8] </div><div class="csl-right-inline">Ç. Arı, S. Aksoy, and O. Arıkan, <span>“Maximum likelihood estimation of gaussian mixture models using stochastic search,”</span> <em>Pattern Recognition</em>, vol. 45, no. 7, pp. 2804–2816, 2012, doi: <a href="https://doi.org/10.1016/j.patcog.2011.12.023">https://doi.org/10.1016/j.patcog.2011.12.023</a>.</div>
+<div class="csl-left-margin">[9] </div><div class="csl-right-inline">Ç. Arı, S. Aksoy, and O. Arıkan, <span>“Maximum likelihood estimation of gaussian mixture models using stochastic search,”</span> <em>Pattern Recognition</em>, vol. 45, no. 7, pp. 2804–2816, 2012, doi: <a href="https://doi.org/10.1016/j.patcog.2011.12.023">https://doi.org/10.1016/j.patcog.2011.12.023</a>.</div>
 </div>
 <div id="ref-6713922" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[9] </div><div class="csl-right-inline">E. Yücesoy and V. V. Nabiyev, <span>“Gender identification of a speaker using MFCC and GMM,”</span> in <em>2013 8th international conference on electrical and electronics engineering (ELECO)</em>, 2013, pp. 626–629. doi: <a href="https://doi.org/10.1109/ELECO.2013.6713922">10.1109/ELECO.2013.6713922</a>.</div>
+<div class="csl-left-margin">[10] </div><div class="csl-right-inline">E. Yücesoy and V. V. Nabiyev, <span>“Gender identification of a speaker using MFCC and GMM,”</span> in <em>2013 8th international conference on electrical and electronics engineering (ELECO)</em>, 2013, pp. 626–629. doi: <a href="https://doi.org/10.1109/ELECO.2013.6713922">10.1109/ELECO.2013.6713922</a>.</div>
 </div>
 <div id="ref-6031408" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[10] </div><div class="csl-right-inline">M. Aymen, A. Abdelaziz, S. Halim, and H. Maaref, <span>“Hidden markov models for automatic speech recognition,”</span> in <em>2011 international conference on communications, computing and control applications (CCCA)</em>, 2011, pp. 1–6. doi: <a href="https://doi.org/10.1109/CCCA.2011.6031408">10.1109/CCCA.2011.6031408</a>.</div>
+<div class="csl-left-margin">[11] </div><div class="csl-right-inline">M. Aymen, A. Abdelaziz, S. Halim, and H. Maaref, <span>“Hidden markov models for automatic speech recognition,”</span> in <em>2011 international conference on communications, computing and control applications (CCCA)</em>, 2011, pp. 1–6. doi: <a href="https://doi.org/10.1109/CCCA.2011.6031408">10.1109/CCCA.2011.6031408</a>.</div>
 </div>
 </div></section></div></main>
 <!-- /main column -->
