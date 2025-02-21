@@ -5,6 +5,7 @@ author: "Wanghley Soares Martins"
 date: last-modified
 format:
   html:
+    output-file: index.html
     code-fold: true
     toc: true
     toc-depth: 5
