@@ -1,0 +1,17 @@
+---
+title: |
+    Decoding Speech: A Probabilistic Framework for Spoken Digit Recognition
+author: "Wanghley Soares Martins"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+bibliography: references.bib
+csl: ieee.csl
+abstract: |
+  This project presents a probabilistic approach to recognizing spoken digits using Gaussian Mixture Models (GMM) and Mel-Frequency Cepstral Coefficients (MFCCs). By combining the power of statistical modeling with feature extraction techniques inspired by human auditory perception, the system achieves high accuracy in classifying spoken digits.
+
+  The framework employs MFCCs to extract compact and meaningful features from audio signals and uses GMMs to model the probability distribution of these features. The results demonstrate that this lightweight system is ideal for resource-constrained environments, offering a practical solution for speech recognition tasks.
+jupyter: python3
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.

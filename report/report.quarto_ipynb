@@ -1,0 +1,38 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "---\n",
+        "title: |\n",
+        "    Decoding Speech: A Probabilistic Framework for Spoken Digit Recognition\n",
+        "author: \"Wanghley Soares Martins\"\n",
+        "date: \"`r format(Sys.Date(), '%B %d, %Y')`\"\n",
+        "bibliography: references.bib\n",
+        "csl: ieee.csl\n",
+        "abstract: |\n",
+        "  This project presents a probabilistic approach to recognizing spoken digits using Gaussian Mixture Models (GMM) and Mel-Frequency Cepstral Coefficients (MFCCs). By combining the power of statistical modeling with feature extraction techniques inspired by human auditory perception, the system achieves high accuracy in classifying spoken digits.\n",
+        "\n",
+        "  The framework employs MFCCs to extract compact and meaningful features from audio signals and uses GMMs to model the probability distribution of these features. The results demonstrate that this lightweight system is ideal for resource-constrained environments, offering a practical solution for speech recognition tasks.\n",
+        "jupyter: python3\n",
+        "---\n",
+        "\n",
+        "\n",
+        "## Quarto\n",
+        "\n",
+        "Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>."
+      ],
+      "id": "cd1b0e0a"
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3",
+      "language": "python",
+      "name": "python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}
